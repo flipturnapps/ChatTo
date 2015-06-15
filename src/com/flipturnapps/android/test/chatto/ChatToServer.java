@@ -3,6 +3,7 @@ package com.flipturnapps.android.test.chatto;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -13,6 +14,7 @@ public class ChatToServer extends ServerSocket implements Runnable
 	private boolean alive = true;
 	private Thread myThread;
 	private ChatTextOutputter outputter;
+	private PrintWriter writer;
 	public ChatToServer(ChatTextOutputter out) throws IOException 
 	{
 		super(PORT);
@@ -30,23 +32,31 @@ public class ChatToServer extends ServerSocket implements Runnable
 		{
 			e.printStackTrace();
 		}
-		
+		this.outputter.outputText("Client connected!");
+		BufferedReader reader = null;
 		try
 		{
-			BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
-			while(alive)
-			{
-				String line = reader.readLine();
-				if(line != null && !(line.equals("")))
-				{
-					outputter.outputText(line);
-				}
-			}
+			reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
 		} 
 		catch (IOException e) 
 		{
 			e.printStackTrace();
 		}
+			while(alive)
+			{
+				String line = null;
+				try {
+					line = reader.readLine();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if(line != null && !(line.equals("")))
+				{
+					outputter.outputText(line);
+				}
+			}
+		
 		
 	}
 	
@@ -62,6 +72,19 @@ public class ChatToServer extends ServerSocket implements Runnable
 		super.close();
 		alive = false;
 		myThread.interrupt();
+	}
+
+	public void sendText(String text)
+	{
+		if(writer == null)
+			try {
+				writer = new PrintWriter(client.getOutputStream());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		writer.println(text);
+		writer.flush();
 	}
 	
 
