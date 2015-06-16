@@ -33,7 +33,6 @@ public class MainActivity extends Activity implements ChatTextOutputter
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//this.outputText("hai");
 	}
 
 	protected void onStop()
@@ -41,8 +40,8 @@ public class MainActivity extends Activity implements ChatTextOutputter
 		super.onStop();
 		try {
 			server.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (IOException e) 
+		{
 			e.printStackTrace();
 		}
 	}

@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 public class ChatToServer extends ServerSocket implements Runnable
 {
@@ -27,12 +28,24 @@ public class ChatToServer extends ServerSocket implements Runnable
 	public void run()
 	{
 		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e1) 
+		{
+			e1.printStackTrace();
+		}
+	
+			this.outputter.outputText("Ip to connect: " + this.getInetAddress().toString());
+		
+		try {
 			this.accept();
 		} catch (IOException e) 
 		{
 			e.printStackTrace();
 		}
-		this.outputter.outputText("Client connected!");
+		if(client != null)
+		this.outputter.outputText("Client connected: " + client.getInetAddress().toString());
+		else
+			this.outputter.outputText("Client is null");
 		BufferedReader reader = null;
 		try
 		{
@@ -47,8 +60,8 @@ public class ChatToServer extends ServerSocket implements Runnable
 				String line = null;
 				try {
 					line = reader.readLine();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
+				} catch (Exception e) 
+				{
 					e.printStackTrace();
 				}
 				if(line != null && !(line.equals("")))
@@ -71,7 +84,14 @@ public class ChatToServer extends ServerSocket implements Runnable
 	{
 		super.close();
 		alive = false;
+		try
+		{
 		myThread.interrupt();
+		}
+		catch(Exception ex)
+		{
+			
+		}
 	}
 
 	public void sendText(String text)
