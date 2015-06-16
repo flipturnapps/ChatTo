@@ -22,7 +22,7 @@ import android.widget.EditText;
 
 public class MainActivity extends Activity implements Runnable, LocationListener
 {
-	private String serverIp = null;
+	private static final String SERVERIP = "192.168.43.172";
 	private ChatToClient client;
 	private TextOutputter toastOutputter;
 	private Thread thread;
@@ -100,8 +100,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	{
 		toastOutputter = new ToastOutputter(this);
 		textViewOutputter = new TextViewOutputter(this);
-		if(serverIp == null)
-		{
+	
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException e) 
@@ -120,6 +119,13 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 
 				}
 			};
+			try {
+				client = new ChatToClient(this.toastOutputter,SERVERIP);
+			} catch (IOException e) 
+			{
+				e.printStackTrace();
+			}
+			/* RE-ENABLE FOR GPS READINGS
 			this.runOnUiThread(new Runnable()
 			{
 
@@ -135,17 +141,12 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 				}
 
 			});
+			*/
 
-		}
-		else
-		{
-			try {
-				client = new ChatToClient(this.toastOutputter,serverIp);
-			} catch (IOException e) 
-			{
-				e.printStackTrace();
-			}
-		}
+		
+		
+			
+		
 	}
 
 	private void useLocation(Location location)
@@ -196,12 +197,14 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	}
 	public void onFieldConfirm()
 	{
+		//needs editing: obsolete
+		/*
 		EditText editText = (EditText) findViewById(R.id.input);
 		String text = editText.getText().toString();
 
 		if(text.replace(".", "~").split("~").length==4)
 		{
-			serverIp = text;
+			SERVERIP = text;
 			new Thread(getActivity()).start();
 		}
 		else
@@ -217,6 +220,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 
 			}
 		});
+		*/
 	}
 
 }

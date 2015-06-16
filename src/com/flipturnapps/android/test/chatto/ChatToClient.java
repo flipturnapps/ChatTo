@@ -14,6 +14,7 @@ public class ChatToClient extends Socket implements Runnable
 	private Thread myThread;
 	private TextOutputter outputter;
 	private PrintWriter writer;
+	private String lastResponse;
 	static ChatToClient self;
 	public ChatToClient(TextOutputter out, String ip) throws IOException 
 	{
@@ -21,7 +22,7 @@ public class ChatToClient extends Socket implements Runnable
 		myThread = new Thread(this);
 		myThread.start();
 		this.outputter = out;
-		
+
 	}
 
 	@Override
@@ -36,9 +37,9 @@ public class ChatToClient extends Socket implements Runnable
 		}
 		this.outputter.outputText("Connection established");
 		self = this;
-		
-		
-		
+
+
+
 		BufferedReader reader = null;
 		try
 		{
@@ -61,7 +62,7 @@ public class ChatToClient extends Socket implements Runnable
 			}
 			if(line != null && !(line.equals("")))
 			{
-				outputter.outputText(line);
+				readLine(line);
 			}
 		}
 	}	
@@ -86,12 +87,33 @@ public class ChatToClient extends Socket implements Runnable
 		if(writer == null)
 			try {
 				writer = new PrintWriter(this.getOutputStream());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
+			} catch (IOException e) 
+		{				
+
 				e.printStackTrace();
-			}
+		}
 		writer.println(text);
 		writer.flush();
+	}
+
+	public String aquireNextResponse(String command) 
+	{
+		lastResponse = null;
+		this.sendText(command);
+		while(lastResponse == null)
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) 
+		{
+
+				e.printStackTrace();
+		}
+		return lastResponse;
+	}
+	public void readLine(String line)
+	{
+		outputter.outputText(line);
+		lastResponse = line;
 	}
 
 

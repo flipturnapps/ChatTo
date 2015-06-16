@@ -4,6 +4,7 @@ import org.jasypt.util.text.BasicTextEncryptor;
 
 import android.content.Context;
 import android.content.Intent;
+import android.telephony.TelephonyManager;
 
 public class IncommingMessageHandler
 {
@@ -12,20 +13,24 @@ public class IncommingMessageHandler
 
 	public void handleNewMessage(String source, String body, Context context, Intent intent) 
 	{
-		//get password from server
-		String password = "!@#$%12345abcde";
+
+		TelephonyManager tMgr = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
+		String mPhoneNumber = tMgr.getLine1Number();
+		String password = ChatToClient.self.aquireNextResponse(mPhoneNumber);	
+
+		// password = "!@#$%12345abcde";
 		if(encryptor == null)
 			encryptor = new BasicTextEncryptor();
 		try
 		{
-		encryptor.setPassword(password);
-		String toBeDecrypted = body.split("~")[1];
-		String decryptedMessage = encryptor.decrypt(toBeDecrypted);
-		MainActivity.textViewOutputter.outputText(source + ": " + decryptedMessage);
+			encryptor.setPassword(password);
+			String toBeDecrypted = body.split("~")[1];
+			String decryptedMessage = encryptor.decrypt(toBeDecrypted);
+			MainActivity.textViewOutputter.outputText(source + ": " + decryptedMessage);
 		}
 		catch(Exception ex)
 		{
-			MainActivity.textViewOutputter.outputText(source + ": See messaging app.");
+			MainActivity.textViewOutputter.outputText(source + ": <See messaging app.>");
 		}
 
 	}
