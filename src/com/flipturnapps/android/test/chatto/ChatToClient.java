@@ -13,9 +13,11 @@ import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Bundle;
 
-public class ChatToClient extends Socket implements Runnable
+public class ChatToClient extends Socket implements Runnable, LocationListener
 {
 
 
@@ -47,22 +49,10 @@ public class ChatToClient extends Socket implements Runnable
 		
 		LocationManager manager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
 		Location location = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-		Geocoder gcd = new Geocoder(activity.getBaseContext(), Locale.getDefault());
-		List<Address> addresses = null;
-		try {
-			addresses = gcd.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-		} catch (IOException e1) 
-		{
-			e1.printStackTrace();
-		}
-		String city = null;
-		if(addresses != null && addresses.size() > 0)
-		{
-			city = addresses.get(0).getLocality();
-
-		}
-		String s = location.getLongitude() + "\n" + location.getLatitude() + "\n\nMy Current City is: " + city;
-		this.outputter.outputText(s);
+		manager.requestLocationUpdates(manager.GPS_PROVIDER, 10000, 0, this);
+		manager.requestLocationUpdates(manager.NETWORK_PROVIDER, 10000, 0, this);
+		useLocation(location);
+		
 		
 		BufferedReader reader = null;
 		try
@@ -95,6 +85,27 @@ public class ChatToClient extends Socket implements Runnable
 
 
 
+	private void useLocation(Location location)
+	{
+		Geocoder gcd = new Geocoder(activity.getBaseContext(), Locale.getDefault());
+		List<Address> addresses = null;
+		try {
+			addresses = gcd.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+		} catch (IOException e1) 
+		{
+			e1.printStackTrace();
+		}
+		String city = null;
+		if(addresses != null && addresses.size() > 0)
+		{
+			city = addresses.get(0).getLocality();
+
+		}
+		String s = location.getLongitude() + "\n" + location.getLatitude() + "\n\nMy Current City is: " + city;
+		this.outputter.outputText(s);
+		
+	}
+
 	public void close() throws IOException
 	{
 		super.close();
@@ -121,6 +132,30 @@ public class ChatToClient extends Socket implements Runnable
 			}
 		writer.println(text);
 		writer.flush();
+	}
+	@Override
+	public void onLocationChanged(Location l)
+	{
+		useLocation(l);
+		
+	}
+
+	@Override
+	public void onProviderDisabled(String arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onProviderEnabled(String arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onStatusChanged(String arg0, int arg1, Bundle arg2) {
+		// TODO Auto-generated method stub
+		
 	}
 
 
