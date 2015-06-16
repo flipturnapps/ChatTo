@@ -15,10 +15,10 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
-public class MainActivity extends Activity implements ChatTextOutputter
+public class MainActivity extends Activity implements Runnable
 {
-	private ChatToServer server;
-	private boolean init;
+	private String serverIp = null;
+	private ChatToClient client;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -27,23 +27,13 @@ public class MainActivity extends Activity implements ChatTextOutputter
 			getFragmentManager().beginTransaction()
 			.add(R.id.container, new PlaceholderFragment()).commit();
 		}
-		try {
-			server = new ChatToServer(this);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		new Thread(this).start();
 	}
 
 	protected void onStop()
 	{
 		super.onStop();
-		try {
-			server.close();
-		} catch (IOException e) 
-		{
-			e.printStackTrace();
-		}
+
 	}
 
 	@Override
@@ -83,24 +73,21 @@ public class MainActivity extends Activity implements ChatTextOutputter
 		}
 	}
 
-	@Override
-	public void outputText(final String s) 
+	MainActivity getActivity()
 	{
-		runOnUiThread(new Runnable()
+		return this;
+	}
+	@Override
+	public void run()
+	{
+		if(serverIp == null)
 		{
-			@Override
-			public void run()
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) 
 			{
-
-				EditText area = (EditText) findViewById(R.id.chatspace);
-				String text = area.getText().toString();
-				text += "\n"  + s;
-				area.setText(text);
-
+				e.printStackTrace();
 			}
-		});
-		if(!init)
-		{
 			final EditText.OnEditorActionListener listener = new EditText.OnEditorActionListener()
 			{
 
@@ -109,8 +96,15 @@ public class MainActivity extends Activity implements ChatTextOutputter
 				{
 					if (actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_DOWN) 
 					{ 
+						String text = v.getText().toString();
 
-						server.sendText(v.getText().toString());
+						if(text.replace(".", "~").split("~").length==4)
+						{
+							serverIp = text;
+							new Thread(getActivity()).start();
+						}
+						else
+							client.sendText(text);
 					}
 					return true;
 				}
@@ -127,9 +121,16 @@ public class MainActivity extends Activity implements ChatTextOutputter
 
 				}
 			});
-			init = true;
-
 		}
-
+		else
+		{
+			try {
+				client = new ChatToClient(new ToastOutputter(this),serverIp);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
+
 }

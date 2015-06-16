@@ -1,6 +1,6 @@
 package com.flipturnapps.android.test.chatto;
 
-public interface ChatTextOutputter 
+public interface TextOutputter 
 {
 	public void outputText(String s);
 }

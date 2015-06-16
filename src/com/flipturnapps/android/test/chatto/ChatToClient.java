@@ -7,17 +7,17 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ChatToServer extends ServerSocket implements Runnable
+public class ChatToClient extends Socket implements Runnable
 {
-	public static final int PORT = 12346;
-	private Socket client;
+
+	
 	private boolean alive = true;
 	private Thread myThread;
 	private TextOutputter outputter;
 	private PrintWriter writer;
-	public ChatToServer(TextOutputter out) throws IOException 
+	public ChatToClient(TextOutputter out, String ip) throws IOException 
 	{
-		super(PORT);
+		super(ip, ChatToServer.PORT);
 		myThread = new Thread(this);
 		myThread.start();
 		this.outputter = out;
@@ -32,22 +32,11 @@ public class ChatToServer extends ServerSocket implements Runnable
 		{
 			e1.printStackTrace();
 		}
-			this.outputter.outputText("Ip to connect: " + this.getInetAddress().toString());
-		
-		try {
-			this.accept();
-		} catch (IOException e) 
-		{
-			e.printStackTrace();
-		}
-		if(client != null)
-		this.outputter.outputText("Client connected: " + client.getInetAddress().toString());
-		else
-			this.outputter.outputText("Client is null");
+			this.outputter.outputText("Connection established");
 		BufferedReader reader = null;
 		try
 		{
-			reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
+			reader = new BufferedReader(new InputStreamReader(this.getInputStream()));
 		} 
 		catch (Exception e) 
 		{
@@ -71,12 +60,7 @@ public class ChatToServer extends ServerSocket implements Runnable
 		
 	}
 	
-	public Socket accept() throws IOException
-	{
-		Socket s = super.accept();
-		client = s;
-		return s;
-	}
+	
 	
 	public void close() throws IOException
 	{
@@ -84,7 +68,8 @@ public class ChatToServer extends ServerSocket implements Runnable
 		alive = false;
 		try
 		{
-		myThread.interrupt();
+			if(myThread != null)
+			myThread.interrupt();
 		}
 		catch(Exception ex)
 		{
@@ -96,7 +81,7 @@ public class ChatToServer extends ServerSocket implements Runnable
 	{
 		if(writer == null)
 			try {
-				writer = new PrintWriter(client.getOutputStream());
+				writer = new PrintWriter(this.getOutputStream());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
