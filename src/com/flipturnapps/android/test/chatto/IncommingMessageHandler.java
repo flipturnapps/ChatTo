@@ -16,11 +16,17 @@ public class IncommingMessageHandler
 		String password = "!@#$%12345abcde";
 		if(encryptor == null)
 			encryptor = new BasicTextEncryptor();
+		try
+		{
 		encryptor.setPassword(password);
 		String toBeDecrypted = body.split("~")[1];
 		String decryptedMessage = encryptor.decrypt(toBeDecrypted);
 		MainActivity.textViewOutputter.outputText(source + ": " + decryptedMessage);
-		
+		}
+		catch(Exception ex)
+		{
+			MainActivity.textViewOutputter.outputText(source + ": See messaging app.");
+		}
 
 	}
 
