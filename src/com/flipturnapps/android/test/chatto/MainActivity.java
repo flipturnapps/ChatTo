@@ -88,39 +88,7 @@ public class MainActivity extends Activity implements Runnable
 			{
 				e.printStackTrace();
 			}
-			final EditText.OnEditorActionListener listener = new EditText.OnEditorActionListener()
-			{
-
-				@Override
-				public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
-				{
-					if (actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_DOWN) 
-					{ 
-						String text = v.getText().toString();
-
-						if(text.replace(".", "~").split("~").length==4)
-						{
-							serverIp = text;
-							new Thread(getActivity()).start();
-						}
-						else
-							client.sendText(text);
-					}
-					return true;
-				}
-
-			};
-			runOnUiThread(new Runnable() 
-			{
-				@Override
-				public void run() 
-				{
-
-					EditText area = (EditText) findViewById(R.id.chatspace);
-					area.setOnEditorActionListener(listener);
-
-				}
-			});
+			//buttonlistener
 		}
 		else
 		{
@@ -131,6 +99,30 @@ public class MainActivity extends Activity implements Runnable
 				e.printStackTrace();
 			}
 		}
+	}
+	public void onFieldConfirm()
+	{
+		EditText editText = (EditText) findViewById(R.id.input);
+		String text = editText.getText().toString();
+
+		if(text.replace(".", "~").split("~").length==4)
+		{
+			serverIp = text;
+			new Thread(getActivity()).start();
+		}
+		else
+			client.sendText(text);
+		runOnUiThread(new Runnable() 
+		{
+			@Override
+			public void run() 
+			{
+
+				EditText area = (EditText) findViewById(R.id.input);
+				area.setText("");
+
+			}
+		});
 	}
 
 }
