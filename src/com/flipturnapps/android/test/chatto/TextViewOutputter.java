@@ -3,10 +3,10 @@ package com.flipturnapps.android.test.chatto;
 import android.app.Activity;
 import android.widget.EditText;
 
-public class EditTextOutputter implements TextOutputter {
+public class TextViewOutputter implements TextOutputter {
 
 	private Activity activity;
-	public EditTextOutputter(MainActivity mainActivity) 
+	public TextViewOutputter(MainActivity mainActivity) 
 	{
 		activity = mainActivity;
 	}
@@ -22,7 +22,7 @@ public class EditTextOutputter implements TextOutputter {
 			public void run()
 			{
 
-				EditText area = (EditText) activity.findViewById(R.id.chatspace);
+				EditText area = (EditText) activity.findViewById(R.id.textView1);
 				String text = area.getText().toString();
 				text += "\n"  + s;
 				area.setText(text);

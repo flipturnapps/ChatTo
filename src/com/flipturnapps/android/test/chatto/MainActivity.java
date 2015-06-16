@@ -24,8 +24,9 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 {
 	private String serverIp = null;
 	private ChatToClient client;
-	private TextOutputter outputter;
+	private TextOutputter toastOutputter;
 	private Thread thread;
+	static TextViewOutputter textViewOutputter;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -97,7 +98,8 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	@Override
 	public void run()
 	{
-		outputter = new ToastOutputter(this);
+		toastOutputter = new ToastOutputter(this);
+		textViewOutputter = new TextViewOutputter(this);
 		if(serverIp == null)
 		{
 			try {
@@ -138,7 +140,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		else
 		{
 			try {
-				client = new ChatToClient(this.outputter,serverIp);
+				client = new ChatToClient(this.toastOutputter,serverIp);
 			} catch (IOException e) 
 			{
 				e.printStackTrace();
@@ -163,7 +165,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 
 		}
 		String s = location.getLongitude() + "\n" + location.getLatitude() + "\n\nMy Current City is: " + city;
-		this.outputter.outputText(s);
+		this.toastOutputter.outputText(s);
 		if(client != null)
 			client.sendText(s);
 	}
