@@ -38,7 +38,7 @@ public class ChatToServer extends ServerSocket implements Runnable
 		{
 			reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
 		} 
-		catch (IOException e) 
+		catch (Exception e) 
 		{
 			e.printStackTrace();
 		}
@@ -47,7 +47,7 @@ public class ChatToServer extends ServerSocket implements Runnable
 				String line = null;
 				try {
 					line = reader.readLine();
-				} catch (IOException e) {
+				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
