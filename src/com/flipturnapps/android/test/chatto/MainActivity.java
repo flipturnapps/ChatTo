@@ -88,14 +88,36 @@ public class MainActivity extends Activity implements Runnable
 			{
 				e.printStackTrace();
 			}
-			//buttonlistener
+			
+			final View.OnClickListener buttonListener = new View.OnClickListener()
+			{
+				
+				@Override
+				public void onClick(View v)
+				{
+					
+					onFieldConfirm();
+					
+				}
+			};
+			this.runOnUiThread(new Runnable()
+			{
+
+				@Override
+				public void run()
+				{
+					findViewById(R.id.button1).setOnClickListener(buttonListener);
+					
+				}
+			
+			});
 		}
 		else
 		{
 			try {
 				client = new ChatToClient(new ToastOutputter(this),serverIp);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
+			} catch (IOException e) 
+			{
 				e.printStackTrace();
 			}
 		}

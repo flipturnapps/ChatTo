@@ -4,5 +4,6 @@
     <string name="app_name">ChatTo</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="confirmbuttontext">Confirm</string>
 
 </resources>
