@@ -1,24 +1,32 @@
 package com.flipturnapps.android.test.chatto;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.jasypt.util.text.BasicTextEncryptor;
+
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
+import android.telephony.SmsManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.Toast;
 
 public class MainActivity extends Activity implements Runnable, LocationListener
 {
@@ -26,6 +34,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	private ChatToClient client;
 	private TextOutputter toastOutputter;
 	private Thread thread;
+	private BasicTextEncryptor encryptor;
 	static TextViewOutputter textViewOutputter;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +60,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 			thread.start();
 		}
 	}
-	
+
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -60,7 +69,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		return true;
 	}
 
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle action bar item clicks here. The action bar will
@@ -100,32 +109,32 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	{
 		toastOutputter = new ToastOutputter(this);
 		textViewOutputter = new TextViewOutputter(this);
-	
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) 
+
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) 
+		{
+			e.printStackTrace();
+		}
+
+		final View.OnClickListener buttonListener = new View.OnClickListener()
+		{
+
+			@Override
+			public void onClick(View v)
 			{
-				e.printStackTrace();
+
+				onFieldConfirm();
+
 			}
-
-			final View.OnClickListener buttonListener = new View.OnClickListener()
-			{
-
-				@Override
-				public void onClick(View v)
-				{
-
-					onFieldConfirm();
-
-				}
-			};
-			try {
-				client = new ChatToClient(this.toastOutputter,SERVERIP);
-			} catch (IOException e) 
-			{
-				e.printStackTrace();
-			}
-			/* RE-ENABLE FOR GPS READINGS
+		};
+		try {
+			client = new ChatToClient(this.toastOutputter,SERVERIP);
+		} catch (IOException e) 
+		{
+			e.printStackTrace();
+		}
+		/* RE-ENABLE FOR GPS READINGS
 			this.runOnUiThread(new Runnable()
 			{
 
@@ -141,12 +150,12 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 				}
 
 			});
-			*/
+		 */
 
-		
-		
-			
-		
+
+
+
+
 	}
 
 	private void useLocation(Location location)
@@ -197,30 +206,108 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	}
 	public void onFieldConfirm()
 	{
-		//needs editing: obsolete
-		/*
-		EditText editText = (EditText) findViewById(R.id.input);
-		String text = editText.getText().toString();
-
-		if(text.replace(".", "~").split("~").length==4)
+		//should be in new thread- too lazy right now
+		EditText editText = (EditText) findViewById(R.id.phoneNumberField);
+		String phoneNum = editText.getText().toString();
+		EditText et = (EditText) findViewById(R.id.messageField);
+		String message = et.getText().toString();
+		for(int x = 0; x < phoneNum.length(); x++)
 		{
-			SERVERIP = text;
-			new Thread(getActivity()).start();
+			boolean charGood = false;
+			char ch = phoneNum.charAt(x);
+			for(int y = 0; y < 10; y++)
+			{
+				if((ch + "").equals(y+""))
+					charGood = true;
+			}
+			if(!charGood)
+			{
+				phoneNum= phoneNum.substring(0,x) + phoneNum.substring(x+1,phoneNum.length()); 
+				x--;
+			}
 		}
-		else
-			client.sendText(text);
+
+		String password = client.aquireNextResponse(phoneNum);
+		if(encryptor == null)
+			encryptor = new BasicTextEncryptor();
+		encryptor.setPassword(password);
+		String send = "~" + encryptor.encrypt(message) + "~";
+		sendSMS(phoneNum,send);
 		runOnUiThread(new Runnable() 
 		{
 			@Override
 			public void run() 
-			{
-
-				EditText area = (EditText) findViewById(R.id.input);
-				area.setText("");
+			{			
+				EditText et = (EditText) findViewById(R.id.messageField);
+				et.setText("");
 
 			}
 		});
-		*/
+
+	}
+	private void sendSMS(String phoneNumber, String message)
+	{        
+		String SENT = "SMS_SENT";
+		String DELIVERED = "SMS_DELIVERED";
+
+		PendingIntent sentPI = PendingIntent.getBroadcast(this, 0,
+				new Intent(SENT), 0);
+
+		PendingIntent deliveredPI = PendingIntent.getBroadcast(this, 0,
+				new Intent(DELIVERED), 0);
+
+		//---when the SMS has been sent---
+		registerReceiver(new BroadcastReceiver(){
+			@Override
+			public void onReceive(Context arg0, Intent arg1) {
+				switch (getResultCode())
+				{
+				case Activity.RESULT_OK:
+					Toast.makeText(getBaseContext(), "SMS sent", 
+							Toast.LENGTH_SHORT).show();
+					break;
+				case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
+					Toast.makeText(getBaseContext(), "Generic failure", 
+							Toast.LENGTH_SHORT).show();
+					break;
+				case SmsManager.RESULT_ERROR_NO_SERVICE:
+					Toast.makeText(getBaseContext(), "No service", 
+							Toast.LENGTH_SHORT).show();
+					break;
+				case SmsManager.RESULT_ERROR_NULL_PDU:
+					Toast.makeText(getBaseContext(), "Null PDU", 
+							Toast.LENGTH_SHORT).show();
+					break;
+				case SmsManager.RESULT_ERROR_RADIO_OFF:
+					Toast.makeText(getBaseContext(), "Radio off", 
+							Toast.LENGTH_SHORT).show();
+					break;
+				}
+			}
+		}, new IntentFilter(SENT));
+
+		//---when the SMS has been delivered---
+		registerReceiver(new BroadcastReceiver(){
+			@Override
+			public void onReceive(Context arg0, Intent arg1) {
+				switch (getResultCode())
+				{
+				case Activity.RESULT_OK:
+					Toast.makeText(getBaseContext(), "SMS delivered", 
+							Toast.LENGTH_SHORT).show();
+					break;
+				case Activity.RESULT_CANCELED:
+					Toast.makeText(getBaseContext(), "SMS not delivered", 
+							Toast.LENGTH_SHORT).show();
+					break;                        
+				}
+			}
+		}, new IntentFilter(DELIVERED));        
+
+		SmsManager sms = SmsManager.getDefault();
+		ArrayList<String> parts = sms.divideMessage(message); 
+	    sms.sendMultipartTextMessage(phoneNumber, null, parts, null, null);
+		    
 	}
 
 }
