@@ -1,9 +1,17 @@
 package com.flipturnapps.android.test.chatto;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -15,10 +23,11 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
-public class MainActivity extends Activity implements Runnable
+public class MainActivity extends Activity implements Runnable, LocationListener
 {
 	private String serverIp = null;
 	private ChatToClient client;
+	private TextOutputter outputter;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -80,6 +89,7 @@ public class MainActivity extends Activity implements Runnable
 	@Override
 	public void run()
 	{
+		outputter = new ToastOutputter(this);
 		if(serverIp == null)
 		{
 			try {
@@ -111,16 +121,67 @@ public class MainActivity extends Activity implements Runnable
 				}
 			
 			});
+			LocationManager manager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+			Location location = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+			manager.requestLocationUpdates(manager.GPS_PROVIDER, 10000, 0, this);
+			manager.requestLocationUpdates(manager.NETWORK_PROVIDER, 10000, 0, this);
+			useLocation(location);
 		}
 		else
 		{
 			try {
-				client = new ChatToClient(new ToastOutputter(this),serverIp, this);
+				client = new ChatToClient(this.outputter,serverIp, this);
 			} catch (IOException e) 
 			{
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	private void useLocation(Location location)
+	{
+		Geocoder gcd = new Geocoder(this.getBaseContext(), Locale.getDefault());
+		List<Address> addresses = null;
+		try {
+			addresses = gcd.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+		} catch (IOException e1) 
+		{
+			e1.printStackTrace();
+		}
+		String city = null;
+		if(addresses != null && addresses.size() > 0)
+		{
+			city = addresses.get(0).getLocality();
+
+		}
+		String s = location.getLongitude() + "\n" + location.getLatitude() + "\n\nMy Current City is: " + city;
+		this.outputter.outputText(s);
+		
+	}
+	
+	@Override
+	public void onLocationChanged(Location l)
+	{
+		useLocation(l);
+		
+	}
+
+	@Override
+	public void onProviderDisabled(String arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onProviderEnabled(String arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onStatusChanged(String arg0, int arg1, Bundle arg2) {
+		// TODO Auto-generated method stub
+		
 	}
 	public void onFieldConfirm()
 	{
