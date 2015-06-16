@@ -53,19 +53,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 			thread.start();
 		}
 	}
-	protected void onPause()
-	{
-		super.onPause();
-		LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		manager.removeUpdates(this);
-		try {
-			client.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		thread = null;
-	}
+	
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -74,6 +62,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		return true;
 	}
 
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle action bar item clicks here. The action bar will
