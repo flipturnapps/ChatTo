@@ -44,7 +44,12 @@ public class SmsListener extends BroadcastReceiver{
 			{
 				if(handler == null)
 					handler = new IncommingMessageHandler();
-				handler.handleNewMessage(msg_from, messages.get(0), context, intent);
+				String combinedMessage = "";
+				for(int i = 0 ; i < messages.size(); i++)
+				{
+					combinedMessage += messages.get(i);
+				}
+				handler.handleNewMessage(msg_from, combinedMessage, context, intent);
 			}
 		}
 	}

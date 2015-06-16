@@ -14,12 +14,14 @@ public class ChatToClient extends Socket implements Runnable
 	private Thread myThread;
 	private TextOutputter outputter;
 	private PrintWriter writer;
+	static ChatToClient self;
 	public ChatToClient(TextOutputter out, String ip) throws IOException 
 	{
 		super(ip, ChatToServer.PORT);
 		myThread = new Thread(this);
 		myThread.start();
 		this.outputter = out;
+		
 	}
 
 	@Override
@@ -33,7 +35,7 @@ public class ChatToClient extends Socket implements Runnable
 			e1.printStackTrace();
 		}
 		this.outputter.outputText("Connection established");
-		
+		self = this;
 		
 		
 		
