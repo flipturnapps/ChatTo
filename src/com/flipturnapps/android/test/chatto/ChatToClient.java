@@ -25,14 +25,12 @@ public class ChatToClient extends Socket implements Runnable
 	private Thread myThread;
 	private TextOutputter outputter;
 	private PrintWriter writer;
-	private Activity activity;
-	public ChatToClient(TextOutputter out, String ip, Activity a) throws IOException 
+	public ChatToClient(TextOutputter out, String ip) throws IOException 
 	{
 		super(ip, ChatToServer.PORT);
 		myThread = new Thread(this);
 		myThread.start();
 		this.outputter = out;
-		this.activity = a;
 	}
 
 	@Override

@@ -130,7 +130,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		else
 		{
 			try {
-				client = new ChatToClient(this.outputter,serverIp, this);
+				client = new ChatToClient(this.outputter,serverIp);
 			} catch (IOException e) 
 			{
 				e.printStackTrace();
@@ -156,7 +156,8 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		}
 		String s = location.getLongitude() + "\n" + location.getLatitude() + "\n\nMy Current City is: " + city;
 		this.outputter.outputText(s);
-		
+		if(client != null)
+			client.sendText(s);
 	}
 	
 	@Override
