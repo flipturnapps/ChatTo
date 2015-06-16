@@ -8,6 +8,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import com.google.android.gms.maps.GoogleMap;
+
 public class ChatToServer extends ServerSocket implements Runnable
 {
 	public static final int PORT = 12346;
@@ -33,7 +35,6 @@ public class ChatToServer extends ServerSocket implements Runnable
 		{
 			e1.printStackTrace();
 		}
-	
 			this.outputter.outputText("Ip to connect: " + this.getInetAddress().toString());
 		
 		try {
