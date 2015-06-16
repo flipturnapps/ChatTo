@@ -23,7 +23,7 @@ public class ToastOutputter implements TextOutputter {
 			public void run()
 			{
 
-				Toast toast = Toast.makeText(activity, s, Toast.LENGTH_LONG);
+				Toast toast = Toast.makeText(activity, s, Toast.LENGTH_SHORT);
 				toast.show();
 			}
 		});		

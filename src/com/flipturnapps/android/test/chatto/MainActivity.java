@@ -28,6 +28,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	private String serverIp = null;
 	private ChatToClient client;
 	private TextOutputter outputter;
+	private Thread thread;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -36,13 +37,34 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 			getFragmentManager().beginTransaction()
 			.add(R.id.container, new PlaceholderFragment()).commit();
 		}
-		new Thread(this).start();
+		if(thread == null)
+		{
+			thread = new Thread(this);
+			thread.start();
+		}
 	}
 
-	protected void onStop()
+	protected void onResume()
 	{
-		super.onStop();
-
+		super.onResume();
+		if(thread == null)
+		{
+			thread = new Thread(this);
+			thread.start();
+		}
+	}
+	protected void onPause()
+	{
+		super.onPause();
+		LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		manager.removeUpdates(this);
+		try {
+			client.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		thread = null;
 	}
 
 	@Override
@@ -93,21 +115,21 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		if(serverIp == null)
 		{
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(5000);
 			} catch (InterruptedException e) 
 			{
 				e.printStackTrace();
 			}
-			
+
 			final View.OnClickListener buttonListener = new View.OnClickListener()
 			{
-				
+
 				@Override
 				public void onClick(View v)
 				{
-					
+
 					onFieldConfirm();
-					
+
 				}
 			};
 			this.runOnUiThread(new Runnable()
@@ -117,15 +139,15 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 				public void run()
 				{
 					findViewById(R.id.button1).setOnClickListener(buttonListener);
-					
+					LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+					Location location = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+					manager.requestLocationUpdates(manager.GPS_PROVIDER, 10000, 0, getActivity());
+					manager.requestLocationUpdates(manager.NETWORK_PROVIDER, 10000, 0, getActivity());
+					useLocation(location);
 				}
-			
+
 			});
-			LocationManager manager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-			Location location = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-			manager.requestLocationUpdates(manager.GPS_PROVIDER, 10000, 0, this);
-			manager.requestLocationUpdates(manager.NETWORK_PROVIDER, 10000, 0, this);
-			useLocation(location);
+
 		}
 		else
 		{
@@ -137,7 +159,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 			}
 		}
 	}
-	
+
 	private void useLocation(Location location)
 	{
 		Geocoder gcd = new Geocoder(this.getBaseContext(), Locale.getDefault());
@@ -159,30 +181,30 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		if(client != null)
 			client.sendText(s);
 	}
-	
+
 	@Override
 	public void onLocationChanged(Location l)
 	{
 		useLocation(l);
-		
+
 	}
 
 	@Override
 	public void onProviderDisabled(String arg0) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onProviderEnabled(String arg0) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onStatusChanged(String arg0, int arg1, Bundle arg2) {
 		// TODO Auto-generated method stub
-		
+
 	}
 	public void onFieldConfirm()
 	{
