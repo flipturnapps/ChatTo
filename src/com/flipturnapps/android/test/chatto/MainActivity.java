@@ -115,7 +115,7 @@ public class MainActivity extends Activity implements Runnable
 		else
 		{
 			try {
-				client = new ChatToClient(new ToastOutputter(this),serverIp);
+				client = new ChatToClient(new ToastOutputter(this),serverIp, this);
 			} catch (IOException e) 
 			{
 				e.printStackTrace();
