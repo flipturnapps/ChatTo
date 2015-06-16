@@ -9,14 +9,14 @@
     tools:context="com.flipturnapps.android.test.chatto.MainActivity$PlaceholderFragment" >
 
     <EditText
-        android:id="@+id/input"
+        android:id="@+id/phoneNumberField"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_toLeftOf="@+id/button1"
         android:ems="10"
-        android:inputType="text" >
+        android:inputType="phone" >
 
         <requestFocus />
     </EditText>
@@ -25,8 +25,8 @@
         android:id="@+id/button1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/input"
-        android:layout_alignBottom="@+id/input"
+        android:layout_alignBaseline="@+id/phoneNumberField"
+        android:layout_alignBottom="@+id/phoneNumberField"
         android:layout_alignParentRight="true"
         android:text="@string/confirmbuttontext" />
 
@@ -34,7 +34,7 @@
         android:id="@+id/scrollView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/input"
+        android:layout_alignLeft="@+id/phoneNumberField"
         android:layout_alignParentTop="true"
         android:layout_alignRight="@+id/button1" >
 
@@ -42,7 +42,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" >
-             <TextView
+
+            <TextView
                 android:id="@+id/textView1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -50,5 +51,16 @@
                 android:text="@string/messageareastart" />
         </LinearLayout>
     </ScrollView>
+
+    <EditText
+        android:id="@+id/messageField"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/button1"
+        android:layout_alignParentLeft="true"
+        android:layout_alignRight="@+id/button1"
+        android:ems="10"
+        android:inputType="textMultiLine"
+        android:scrollHorizontally="@bool/messageTextScrollHorizontally" />
 
 </RelativeLayout>
