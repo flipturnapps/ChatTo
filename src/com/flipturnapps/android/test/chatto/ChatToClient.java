@@ -5,17 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.List;
-import java.util.Locale;
-
-import android.app.Activity;
-import android.content.Context;
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Bundle;
 
 public class ChatToClient extends Socket implements Runnable
 {
@@ -36,14 +25,14 @@ public class ChatToClient extends Socket implements Runnable
 	@Override
 	public void run()
 	{
-		try {
+		try 
+		{
 			Thread.sleep(2000);
 		} catch (InterruptedException e1) 
 		{
 			e1.printStackTrace();
 		}
 		this.outputter.outputText("Connection established");
-		
 		
 		
 		
@@ -73,13 +62,7 @@ public class ChatToClient extends Socket implements Runnable
 				outputter.outputText(line);
 			}
 		}
-
-
-	}
-
-
-
-	
+	}	
 
 	public void close() throws IOException
 	{

@@ -13,15 +13,12 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
-import android.widget.TextView;
 
 public class MainActivity extends Activity implements Runnable, LocationListener
 {
@@ -130,8 +127,8 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 					findViewById(R.id.button1).setOnClickListener(buttonListener);
 					LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 					Location location = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-					manager.requestLocationUpdates(manager.GPS_PROVIDER, 10000, 0, getActivity());
-					manager.requestLocationUpdates(manager.NETWORK_PROVIDER, 10000, 0, getActivity());
+					manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, getActivity());
+					manager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000, 0, getActivity());
 					useLocation(location);
 				}
 
