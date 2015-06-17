@@ -22,12 +22,17 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.ContentObserver;
+import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationListener;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.telephony.SmsManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -61,6 +66,8 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 			thread = new Thread(this);
 			thread.start();
 		}
+		
+		
 	}
 
 	protected void onResume()
@@ -119,6 +126,8 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	@Override
 	public void run()
 	{
+		
+		
 		toastOutputter = new ToastOutputter(this);
 		textViewOutputter = new TextViewOutputter(this);
 		try {
@@ -127,7 +136,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		{
 			e.printStackTrace();
 		}
-
+		
 		final View.OnClickListener buttonListener = new View.OnClickListener()
 		{
 
@@ -333,11 +342,12 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 					output("Server failure.");	
 					return;
 				}
-				if(encryptor == null)
-					encryptor = new BasicTextEncryptor();
+
+				encryptor = new BasicTextEncryptor();
 				encryptor.setPassword(password);
 				String send = "~" + encryptor.encrypt(message) + "~";
 				sendSMS(phoneNum,send);
+				textViewOutputter.outputText("You: " + message);
 				clearMessageField();
 			}
 		};
@@ -426,7 +436,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 							Toast.LENGTH_SHORT).show();
 					break;
 				}
-				*/
+				 */
 			}
 		}, new IntentFilter(SENT));
 
@@ -447,14 +457,14 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 							Toast.LENGTH_SHORT).show();
 					break;                        
 				}
-				*/
+				 */
 			}
 		}, new IntentFilter(DELIVERED));        
 
 		SmsManager sms = SmsManager.getDefault();
 		ArrayList<String> parts = sms.divideMessage(message); 
 		sms.sendMultipartTextMessage(phoneNumber, null, parts, null, null);
-output("Message sent.");
+		output("Message sent.");
 	}
 	void output(String s)
 	{

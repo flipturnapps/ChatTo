@@ -120,7 +120,7 @@ public class ChatToClient extends Socket implements Runnable
 	}
 	public void readLine(String line)
 	{
-		outputter.outputText(line);
+		//outputter.outputText(line);
 		lastResponse = line;
 	}
 

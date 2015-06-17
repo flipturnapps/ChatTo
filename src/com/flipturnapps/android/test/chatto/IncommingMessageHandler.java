@@ -21,7 +21,7 @@ public class IncommingMessageHandler
 		}
 		String password = ChatToClient.self.aquireNextResponse(phoneNumber);	
 
-		if(encryptor == null)
+		
 			encryptor = new BasicTextEncryptor();
 		try
 		{
