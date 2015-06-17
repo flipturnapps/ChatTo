@@ -140,14 +140,40 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 
 			}
 		};
-		//add runnable here
-		try {
-			client = new ChatToClient(this.toastOutputter,SERVERIP);
-		} catch (IOException e) 
+		this.runOnUiThread(new Runnable()
 		{
-			e.printStackTrace();
-		}
-		Thread connectToServerThread = new Thread();
+
+			@Override
+			public void run()
+			{
+				findViewById(R.id.button1).setOnClickListener(buttonListener);
+			}
+
+		});
+		Runnable connectToServerRunner = new Runnable()
+		{
+			public void run() 
+			{
+				while (client == null)
+				{
+					try 
+					{
+						client = new ChatToClient(toastOutputter,SERVERIP);
+					} catch (IOException e) 
+					{
+						e.printStackTrace();
+					}
+					try {
+						Thread.sleep(5000);
+					} catch (InterruptedException e)
+					{
+						e.printStackTrace();
+					}
+				}
+			}		
+		};
+		Thread connectToServerThread = new Thread(connectToServerRunner);
+		connectToServerThread.start();
 
 		/*RE-ENABLE to get locations
 		this.runOnUiThread(new Runnable()
@@ -165,14 +191,14 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 			}
 
 		});
-		*/ 
+		 */ 
 
 
 
 
 
 	}
-	
+
 	private String getDistanceOnRoad(double latitude, double longitude, double prelatitute, double prelongitude) 
 	{
 		String result_in_kms = "";
@@ -231,7 +257,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		this.lastLocation = location;
 
 		this.toastOutputter.outputText("Location Updated!");
-		
+
 	}
 
 	@Override
@@ -243,19 +269,19 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 
 	@Override
 	public void onProviderDisabled(String arg0) {
-		
+
 
 	}
 
 	@Override
 	public void onProviderEnabled(String arg0) {
-		
+
 
 	}
 
 	@Override
 	public void onStatusChanged(String arg0, int arg1, Bundle arg2) {
-		
+
 
 	}
 	public void onFieldConfirm()
@@ -283,10 +309,17 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 						x--;
 					}
 				}
-
-				String password = client.aquireNextResponse(phoneNum);
-				if(password != null)
+				if(client == null)
 				{
+					output("Encrypted send failed: no server connection.");
+					return;
+				}
+				String password = client.aquireNextResponse(phoneNum);
+				if(password == null)
+				{
+					output("Server failure.");	
+					return;
+				}
 				if(encryptor == null)
 					encryptor = new BasicTextEncryptor();
 				encryptor.setPassword(password);
@@ -302,10 +335,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 
 					}
 				});
-				}
-				else
-					toastOutputter.outputText("Server failure.");				
-			}		
+			}
 		};
 		Thread sendSMSThread = new Thread(run);
 		sendSMSThread.start();
@@ -317,13 +347,13 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 			{
 				String distanceString = getDistanceOnRoad(lastLocation.getLatitude(), lastLocation.getLongitude(), MainActivity.DEST_LAT, MainActivity.DEST_LNG);
 				distanceString = "Distance: " + distanceString;
-				toastOutputter.outputText(distanceString);
+
 				textViewOutputter.outputText(distanceString);
-				System.out.println(distanceString);
+				output(distanceString);
 			}
 		});		
 		distanceThread.start();
-		*/
+		 */
 	}
 	private void sendSMS(String phoneNumber, String message)
 	{        
@@ -388,6 +418,11 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		ArrayList<String> parts = sms.divideMessage(message); 
 		sms.sendMultipartTextMessage(phoneNumber, null, parts, null, null);
 
+	}
+	void output(String s)
+	{
+		System.out.println("Toasted: " + s);
+		toastOutputter.outputText(s);
 	}
 
 

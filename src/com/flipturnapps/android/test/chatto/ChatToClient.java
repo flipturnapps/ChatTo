@@ -10,6 +10,7 @@ public class ChatToClient extends Socket implements Runnable
 {
 
 
+	private static final long DEFAULT_WAIT_TIME = 3000;
 	private boolean alive = true;
 	private Thread myThread;
 	private TextOutputter outputter;
@@ -95,18 +96,25 @@ public class ChatToClient extends Socket implements Runnable
 		writer.println(text);
 		writer.flush();
 	}
-
 	public String aquireNextResponse(String command) 
+	{
+		return this.aquireNextResponse(command, DEFAULT_WAIT_TIME);
+	}
+	public String aquireNextResponse(String command, long waitTime) 
 	{
 		lastResponse = null;
 		this.sendText(command);
-		while(lastResponse == null)
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) 
+		long startTime = System.currentTimeMillis();
+		while(lastResponse == null && System.currentTimeMillis() - startTime < waitTime)
 		{
-
+			try 
+			{
+				Thread.sleep(100);
+			} 
+			catch (InterruptedException e) 
+			{
 				e.printStackTrace();
+			}			
 		}
 		return lastResponse;
 	}
