@@ -3,8 +3,6 @@ package com.flipturnapps.android.test.chatto;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -27,11 +25,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.view.LayoutInflater;
@@ -145,17 +140,16 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 
 			}
 		};
-		/* RE-Enable to be client
-		//this only attempts to connnect once..... fix 
+		//add runnable here
 		try {
 			client = new ChatToClient(this.toastOutputter,SERVERIP);
 		} catch (IOException e) 
 		{
 			e.printStackTrace();
 		}
-		 */
+		Thread connectToServerThread = new Thread();
 
-
+		/*RE-ENABLE to get locations
 		this.runOnUiThread(new Runnable()
 		{
 
@@ -171,13 +165,14 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 			}
 
 		});
-
+		*/ 
 
 
 
 
 
 	}
+	
 	private String getDistanceOnRoad(double latitude, double longitude, double prelatitute, double prelongitude) 
 	{
 		String result_in_kms = "";
@@ -235,9 +230,8 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		 */
 		this.lastLocation = location;
 
-		this.toastOutputter.outputText("loc found");
-		//if(client != null)
-		//client.sendText(s);
+		this.toastOutputter.outputText("Location Updated!");
+		
 	}
 
 	@Override
@@ -249,65 +243,75 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 
 	@Override
 	public void onProviderDisabled(String arg0) {
-		// TODO Auto-generated method stub
+		
 
 	}
 
 	@Override
 	public void onProviderEnabled(String arg0) {
-		// TODO Auto-generated method stub
+		
 
 	}
 
 	@Override
 	public void onStatusChanged(String arg0, int arg1, Bundle arg2) {
-		// TODO Auto-generated method stub
+		
 
 	}
 	public void onFieldConfirm()
 	{
-		/* RE-ENABLE TO SEND ENCRYPTED SMS
-		//should be in new thread- too lazy right now
-		EditText editText = (EditText) findViewById(R.id.phoneNumberField);
-		String phoneNum = editText.getText().toString();
-		EditText et = (EditText) findViewById(R.id.messageField);
-		String message = et.getText().toString();
-		for(int x = 0; x < phoneNum.length(); x++)
+		Runnable run = new Runnable()
 		{
-			boolean charGood = false;
-			char ch = phoneNum.charAt(x);
-			for(int y = 0; y < 10; y++)
-			{
-				if((ch + "").equals(y+""))
-					charGood = true;
-			}
-			if(!charGood)
-			{
-				phoneNum= phoneNum.substring(0,x) + phoneNum.substring(x+1,phoneNum.length()); 
-				x--;
-			}
-		}
-
-		String password = client.aquireNextResponse(phoneNum);
-		if(encryptor == null)
-			encryptor = new BasicTextEncryptor();
-		encryptor.setPassword(password);
-		String send = "~" + encryptor.encrypt(message) + "~";
-		sendSMS(phoneNum,send);
-		runOnUiThread(new Runnable() 
-		{
-			@Override
 			public void run() 
-			{			
+			{
+				EditText editText = (EditText) findViewById(R.id.phoneNumberField);
+				String phoneNum = editText.getText().toString();
 				EditText et = (EditText) findViewById(R.id.messageField);
-				et.setText("");
+				String message = et.getText().toString();
+				for(int x = 0; x < phoneNum.length(); x++)
+				{
+					boolean charGood = false;
+					char ch = phoneNum.charAt(x);
+					for(int y = 0; y < 10; y++)
+					{
+						if((ch + "").equals(y+""))
+							charGood = true;
+					}
+					if(!charGood)
+					{
+						phoneNum= phoneNum.substring(0,x) + phoneNum.substring(x+1,phoneNum.length()); 
+						x--;
+					}
+				}
 
-			}
-		});
-		 */
+				String password = client.aquireNextResponse(phoneNum);
+				if(password != null)
+				{
+				if(encryptor == null)
+					encryptor = new BasicTextEncryptor();
+				encryptor.setPassword(password);
+				String send = "~" + encryptor.encrypt(message) + "~";
+				sendSMS(phoneNum,send);
+				runOnUiThread(new Runnable() 
+				{
+					@Override
+					public void run() 
+					{			
+						EditText et = (EditText) findViewById(R.id.messageField);
+						et.setText("");
+
+					}
+				});
+				}
+				else
+					toastOutputter.outputText("Server failure.");				
+			}		
+		};
+		Thread sendSMSThread = new Thread(run);
+		sendSMSThread.start();
+		/*RE-ENABLE for confirm button to calculate distances
 		Thread distanceThread = new Thread (new Runnable()
 		{
-
 			@Override
 			public void run() 
 			{
@@ -317,9 +321,9 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 				textViewOutputter.outputText(distanceString);
 				System.out.println(distanceString);
 			}
-
-		});
+		});		
 		distanceThread.start();
+		*/
 	}
 	private void sendSMS(String phoneNumber, String message)
 	{        
