@@ -52,7 +52,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	private Location lastLocation;
 	private static final double DEST_LNG = -123.302629;
 	private static final double DEST_LAT = 44.597411;
-	
+
 	static TextViewOutputter textViewOutputter;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -153,25 +153,25 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		{
 			e.printStackTrace();
 		}
-		*/
-		
-		
-			this.runOnUiThread(new Runnable()
+		 */
+
+
+		this.runOnUiThread(new Runnable()
+		{
+
+			@Override
+			public void run()
 			{
+				findViewById(R.id.button1).setOnClickListener(buttonListener);
+				LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+				Location location = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+				manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, getActivity());
+				manager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000, 0, getActivity());
+				useLocation(location);
+			}
 
-				@Override
-				public void run()
-				{
-					findViewById(R.id.button1).setOnClickListener(buttonListener);
-					LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-					Location location = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-					manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, getActivity());
-					manager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000, 0, getActivity());
-					useLocation(location);
-				}
+		});
 
-			});
-		 
 
 
 
@@ -180,42 +180,43 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	}
 	private String getDistanceOnRoad(double latitude, double longitude, double prelatitute, double prelongitude) 
 	{
-        String result_in_kms = "";
-        String url = "http://maps.google.com/maps/api/directions/xml?origin="
-                + latitude + "," + longitude + "&destination=" + prelatitute
-                + "," + prelongitude + "&sensor=false&units=metric";
-        String tag[] = { "text" };
-        HttpResponse response = null;
-        try {
-            HttpClient httpClient = new DefaultHttpClient();
-            HttpContext localContext = new BasicHttpContext();
-            HttpPost httpPost = new HttpPost(url);
-            response = httpClient.execute(httpPost, localContext);
-            InputStream is = response.getEntity().getContent();
-            DocumentBuilder builder = DocumentBuilderFactory.newInstance()
-                    .newDocumentBuilder();
-            Document doc = builder.parse(is);
-            if (doc != null) {
-                NodeList nl;
-                ArrayList<String> args = new ArrayList<String>();
-                for (String s : tag) {
-                    nl = doc.getElementsByTagName(s);
-                    if (nl.getLength() > 0) {
-                        Node node = nl.item(nl.getLength() - 1);
-                        args.add(node.getTextContent());
-                    } else {
-                        args.add(" - ");
-                    }
-                }
-                result_in_kms = String.format("%s", args.get(0));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return result_in_kms;
-    }
+		String result_in_kms = "";
+		String url = "http://maps.google.com/maps/api/directions/xml?origin="
+				+ latitude + "," + longitude + "&destination=" + prelatitute
+				+ "," + prelongitude + "&sensor=false&units=metric";
+		String tag[] = { "text" };
+		HttpResponse response = null;
+		try {
+			HttpClient httpClient = new DefaultHttpClient();
+			HttpContext localContext = new BasicHttpContext();
+			HttpPost httpPost = new HttpPost(url);
+			response = httpClient.execute(httpPost, localContext);
+			InputStream is = response.getEntity().getContent();
+			DocumentBuilder builder = DocumentBuilderFactory.newInstance()
+					.newDocumentBuilder();
+			Document doc = builder.parse(is);
+			if (doc != null) {
+				NodeList nl;
+				ArrayList<String> args = new ArrayList<String>();
+				for (String s : tag) {
+					nl = doc.getElementsByTagName(s);
+					if (nl.getLength() > 0) {
+						Node node = nl.item(nl.getLength() - 1);
+						args.add(node.getTextContent());
+					} else {
+						args.add(" - ");
+					}
+				}
+				result_in_kms = String.format("%s", args.get(0));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return result_in_kms;
+	}
 	private void useLocation(Location location)
 	{
+		/* CITYFINDER
 		Geocoder gcd = new Geocoder(this.getBaseContext(), Locale.getDefault());
 		List<Address> addresses = null;
 		try {
@@ -231,10 +232,12 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 
 		}
 		String s = location.getLongitude() + "\n" + location.getLatitude() + "\n\nMy Current City is: " + city;
+		 */
 		this.lastLocation = location;
-		//this.toastOutputter.outputText(s);
+
+		this.toastOutputter.outputText("loc found");
 		//if(client != null)
-			//client.sendText(s);
+		//client.sendText(s);
 	}
 
 	@Override
@@ -301,11 +304,22 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 
 			}
 		});
-		*/
-		String distanceString = this.getDistanceOnRoad(this.lastLocation.getLatitude(), this.lastLocation.getLongitude(), MainActivity.DEST_LAT, MainActivity.DEST_LNG);
-		distanceString = "Distance: " + distanceString;
-		this.toastOutputter.outputText(distanceString);
-		System.out.println(distanceString);
+		 */
+		Thread distanceThread = new Thread (new Runnable()
+		{
+
+			@Override
+			public void run() 
+			{
+				String distanceString = getDistanceOnRoad(lastLocation.getLatitude(), lastLocation.getLongitude(), MainActivity.DEST_LAT, MainActivity.DEST_LNG);
+				distanceString = "Distance: " + distanceString;
+				toastOutputter.outputText(distanceString);
+				textViewOutputter.outputText(distanceString);
+				System.out.println(distanceString);
+			}
+
+		});
+		distanceThread.start();
 	}
 	private void sendSMS(String phoneNumber, String message)
 	{        
@@ -368,8 +382,9 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 
 		SmsManager sms = SmsManager.getDefault();
 		ArrayList<String> parts = sms.divideMessage(message); 
-	    sms.sendMultipartTextMessage(phoneNumber, null, parts, null, null);
-		    
+		sms.sendMultipartTextMessage(phoneNumber, null, parts, null, null);
+
 	}
+
 
 }
