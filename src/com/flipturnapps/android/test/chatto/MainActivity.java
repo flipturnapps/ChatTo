@@ -30,7 +30,7 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity implements Runnable, LocationListener
 {
-	private static final String SERVERIP = "192.168.43.172";
+	private static final String SERVERIP = "192.168.2.65";
 	private ChatToClient client;
 	private TextOutputter toastOutputter;
 	private Thread thread;
