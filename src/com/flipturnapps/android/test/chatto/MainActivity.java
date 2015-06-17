@@ -109,7 +109,6 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	{
 		toastOutputter = new ToastOutputter(this);
 		textViewOutputter = new TextViewOutputter(this);
-
 		try {
 			Thread.sleep(5000);
 		} catch (InterruptedException e) 
