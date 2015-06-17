@@ -18,27 +18,21 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import android.app.ActionBar;
+import android.app.ActionBar.Tab;
 import android.app.Activity;
-import android.app.Fragment;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.ContentObserver;
-import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationListener;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.telephony.SmsManager;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 
 public class MainActivity extends Activity implements Runnable, LocationListener
@@ -56,7 +50,9 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		/*SHOULD BE SAFE TO OMIT
 		setContentView(R.layout.activity_main);
+
 		if (savedInstanceState == null) {
 			getFragmentManager().beginTransaction()
 			.add(R.id.container, new PlaceholderFragment()).commit();
@@ -66,8 +62,22 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 			thread = new Thread(this);
 			thread.start();
 		}
-		
-		
+		 */
+		ActionBar actionBar = getActionBar();
+		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+		actionBar.setDisplayShowTitleEnabled(false);
+
+		Tab tab = actionBar.newTab();
+		tab.setText("test");
+		tab.setTabListener(new ConversationTabListener(this,tab.getText().toString()));
+		actionBar.addTab(tab);
+
+		Tab tab2 = actionBar.newTab();
+		tab2.setText("test2");
+		tab2.setTabListener(new ConversationTabListener(this,tab2.getText().toString()));
+		actionBar.addTab(tab2);
+
+
 	}
 
 	protected void onResume()
@@ -101,23 +111,8 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		return super.onOptionsItemSelected(item);
 	}
 
-	/**
-	 * A placeholder fragment containing a simple view.
-	 */
-	public static class PlaceholderFragment extends Fragment 
-	{
 
-		public PlaceholderFragment() {
-		}
 
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			View rootView = inflater.inflate(R.layout.fragment_main, container,
-					false);
-			return rootView;
-		}
-	}
 
 	MainActivity getActivity()
 	{
@@ -126,8 +121,8 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	@Override
 	public void run()
 	{
-		
-		
+
+
 		toastOutputter = new ToastOutputter(this);
 		textViewOutputter = new TextViewOutputter(this);
 		try {
@@ -136,7 +131,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		{
 			e.printStackTrace();
 		}
-		
+
 		final View.OnClickListener buttonListener = new View.OnClickListener()
 		{
 
