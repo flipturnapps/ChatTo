@@ -1,6 +1,5 @@
 package com.flipturnapps.android.test.chatto;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
@@ -22,17 +21,13 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.ContentObserver;
-import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationListener;
-import android.net.Uri;
+import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.telephony.SmsManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -43,14 +38,13 @@ import android.widget.EditText;
 
 public class MainActivity extends Activity implements Runnable, LocationListener
 {
-	private static final String SERVERIP = "192.168.43.172";
-	private ChatToClient client;
+	
+	
 	private TextOutputter toastOutputter;
 	private Thread thread;
 	private BasicTextEncryptor encryptor;
 	private Location lastLocation;
-	private static final double DEST_LNG = -78.656938;
-	private static final double DEST_LAT = 38;
+	
 
 	static TextViewOutputter textViewOutputter;
 	@Override
@@ -158,35 +152,9 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 			}
 
 		});
-		Runnable connectToServerRunner = new Runnable()
-		{
-			public void run() 
-			{
-				output("Start connection thread");
-				while (client == null)
-				{
-					try 
-					{
-						client = new ChatToClient(toastOutputter,SERVERIP);
-					} catch (IOException e) 
-					{
-						e.printStackTrace();
-						output("Connection to " + SERVERIP + ":" + ChatToServer.PORT + " failed. :(");
-					}
-					try {
-						Thread.sleep(5000);
-					} catch (InterruptedException e)
-					{
-						e.printStackTrace();
-					}
-				}
-				output("End connection thread");
-			}		
-		};
-		Thread connectToServerThread = new Thread(connectToServerRunner);
-		connectToServerThread.start();
-		output("Thread supposedly started.");
-		/*RE-ENABLE to get locations
+		
+		
+		
 		this.runOnUiThread(new Runnable()
 		{
 
@@ -202,12 +170,6 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 			}
 
 		});
-		 */ 
-
-
-
-
-
 	}
 
 	private String getDistanceOnRoad(double latitude, double longitude, double prelatitute, double prelongitude) 
@@ -297,69 +259,6 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	}
 	public void onFieldConfirm()
 	{
-		Runnable run = new Runnable()
-		{
-			public void run() 
-			{
-				EditText editText = (EditText) findViewById(R.id.phoneNumberField);
-				String phoneNum = editText.getText().toString();
-				EditText et = (EditText) findViewById(R.id.messageField);
-				String message = et.getText().toString();
-				for(int x = 0; x < phoneNum.length(); x++)
-				{
-					boolean charGood = false;
-					char ch = phoneNum.charAt(x);
-					for(int y = 0; y < 10; y++)
-					{
-						if((ch + "").equals(y+""))
-							charGood = true;
-					}
-					if(!charGood)
-					{
-						phoneNum= phoneNum.substring(0,x) + phoneNum.substring(x+1,phoneNum.length()); 
-						x--;
-					}
-				}
-				if(message.equalsIgnoreCase("regen"))
-				{
-					if(client == null)
-					{
-						output("No connection to server.");
-						return;
-					}
-					client.sendText("regen:" + phoneNum);					
-					clearMessageField();
-					return;
-				}
-				if(message.equalsIgnoreCase("setnum"))
-				{
-					IncommingMessageHandler.setPhoneNumber(phoneNum);
-					clearMessageField();
-					clearPhoneNumField();
-					return;
-				}
-				if(client == null)
-				{
-					output("Encrypted send failed: no server connection.");
-					return;
-				}
-				String password = client.aquireNextResponse(phoneNum);
-				if(password == null)
-				{
-					output("Server failure.");	
-					return;
-				}
-
-				encryptor = new BasicTextEncryptor();
-				encryptor.setPassword(password);
-				String send = "~" + encryptor.encrypt(message) + "~";
-				sendSMS(phoneNum,send);
-				textViewOutputter.outputText("You: " + message);
-				clearMessageField();
-			}
-		};
-		Thread sendSMSThread = new Thread(run);
-		sendSMSThread.start();
 		/*RE-ENABLE for confirm button to calculate distances
 		Thread distanceThread = new Thread (new Runnable()
 		{
@@ -402,77 +301,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 			}
 		});
 	}
-	private void sendSMS(String phoneNumber, String message)
-	{        
-		String SENT = "SMS_SENT";
-		String DELIVERED = "SMS_DELIVERED";
-
-		PendingIntent sentPI = PendingIntent.getBroadcast(this, 0,
-				new Intent(SENT), 0);
-
-		PendingIntent deliveredPI = PendingIntent.getBroadcast(this, 0,
-				new Intent(DELIVERED), 0);
-
-		//---when the SMS has been sent---
-		registerReceiver(new BroadcastReceiver(){
-			@Override
-			public void onReceive(Context arg0, Intent arg1)
-			{
-				/* DISABLED EXTRA TOASTS
-				switch (getResultCode())
-				switch (getResultCode())
-				{
-				case Activity.RESULT_OK:
-					Toast.makeText(getBaseContext(), "SMS sent", 
-							Toast.LENGTH_SHORT).show();
-					break;
-				case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-					Toast.makeText(getBaseContext(), "Generic failure", 
-							Toast.LENGTH_SHORT).show();
-					break;
-				case SmsManager.RESULT_ERROR_NO_SERVICE:
-					Toast.makeText(getBaseContext(), "No service", 
-							Toast.LENGTH_SHORT).show();
-					break;
-				case SmsManager.RESULT_ERROR_NULL_PDU:
-					Toast.makeText(getBaseContext(), "Null PDU", 
-							Toast.LENGTH_SHORT).show();
-					break;
-				case SmsManager.RESULT_ERROR_RADIO_OFF:
-					Toast.makeText(getBaseContext(), "Radio off", 
-							Toast.LENGTH_SHORT).show();
-					break;
-				}
-				 */
-			}
-		}, new IntentFilter(SENT));
-
-		//---when the SMS has been delivered---
-		registerReceiver(new BroadcastReceiver(){
-			@Override
-			public void onReceive(Context arg0, Intent arg1) 
-			{
-				/* DISABLED EXTRA TOASTS
-				switch (getResultCode())
-				{
-				case Activity.RESULT_OK:
-					Toast.makeText(getBaseContext(), "SMS delivered", 
-							Toast.LENGTH_SHORT).show();
-					break;
-				case Activity.RESULT_CANCELED:
-					Toast.makeText(getBaseContext(), "SMS not delivered", 
-							Toast.LENGTH_SHORT).show();
-					break;                        
-				}
-				 */
-			}
-		}, new IntentFilter(DELIVERED));        
-
-		SmsManager sms = SmsManager.getDefault();
-		ArrayList<String> parts = sms.divideMessage(message); 
-		sms.sendMultipartTextMessage(phoneNumber, null, parts, null, null);
-		output("Message sent.");
-	}
+	
 	void output(String s)
 	{
 		System.out.println("Toasted: " + s);
