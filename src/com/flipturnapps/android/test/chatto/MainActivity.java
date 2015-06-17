@@ -1,11 +1,24 @@
 package com.flipturnapps.android.test.chatto;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 import org.jasypt.util.text.BasicTextEncryptor;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -18,6 +31,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.view.LayoutInflater;
@@ -35,6 +49,10 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	private TextOutputter toastOutputter;
 	private Thread thread;
 	private BasicTextEncryptor encryptor;
+	private Location lastLocation;
+	private static final double DEST_LNG = -123.302629;
+	private static final double DEST_LAT = 44.597411;
+	
 	static TextViewOutputter textViewOutputter;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -127,13 +145,17 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 
 			}
 		};
+		/* RE-Enable to be client
+		//this only attempts to connnect once..... fix 
 		try {
 			client = new ChatToClient(this.toastOutputter,SERVERIP);
 		} catch (IOException e) 
 		{
 			e.printStackTrace();
 		}
-		/* RE-ENABLE FOR GPS READINGS
+		*/
+		
+		
 			this.runOnUiThread(new Runnable()
 			{
 
@@ -149,14 +171,49 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 				}
 
 			});
-		 */
+		 
 
 
 
 
 
 	}
-
+	private String getDistanceOnRoad(double latitude, double longitude, double prelatitute, double prelongitude) 
+	{
+        String result_in_kms = "";
+        String url = "http://maps.google.com/maps/api/directions/xml?origin="
+                + latitude + "," + longitude + "&destination=" + prelatitute
+                + "," + prelongitude + "&sensor=false&units=metric";
+        String tag[] = { "text" };
+        HttpResponse response = null;
+        try {
+            HttpClient httpClient = new DefaultHttpClient();
+            HttpContext localContext = new BasicHttpContext();
+            HttpPost httpPost = new HttpPost(url);
+            response = httpClient.execute(httpPost, localContext);
+            InputStream is = response.getEntity().getContent();
+            DocumentBuilder builder = DocumentBuilderFactory.newInstance()
+                    .newDocumentBuilder();
+            Document doc = builder.parse(is);
+            if (doc != null) {
+                NodeList nl;
+                ArrayList<String> args = new ArrayList<String>();
+                for (String s : tag) {
+                    nl = doc.getElementsByTagName(s);
+                    if (nl.getLength() > 0) {
+                        Node node = nl.item(nl.getLength() - 1);
+                        args.add(node.getTextContent());
+                    } else {
+                        args.add(" - ");
+                    }
+                }
+                result_in_kms = String.format("%s", args.get(0));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result_in_kms;
+    }
 	private void useLocation(Location location)
 	{
 		Geocoder gcd = new Geocoder(this.getBaseContext(), Locale.getDefault());
@@ -174,9 +231,10 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 
 		}
 		String s = location.getLongitude() + "\n" + location.getLatitude() + "\n\nMy Current City is: " + city;
-		this.toastOutputter.outputText(s);
-		if(client != null)
-			client.sendText(s);
+		this.lastLocation = location;
+		//this.toastOutputter.outputText(s);
+		//if(client != null)
+			//client.sendText(s);
 	}
 
 	@Override
@@ -205,6 +263,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	}
 	public void onFieldConfirm()
 	{
+		/* RE-ENABLE TO SEND ENCRYPTED SMS
 		//should be in new thread- too lazy right now
 		EditText editText = (EditText) findViewById(R.id.phoneNumberField);
 		String phoneNum = editText.getText().toString();
@@ -242,7 +301,11 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 
 			}
 		});
-
+		*/
+		String distanceString = this.getDistanceOnRoad(this.lastLocation.getLatitude(), this.lastLocation.getLongitude(), MainActivity.DEST_LAT, MainActivity.DEST_LNG);
+		distanceString = "Distance: " + distanceString;
+		this.toastOutputter.outputText(distanceString);
+		System.out.println(distanceString);
 	}
 	private void sendSMS(String phoneNumber, String message)
 	{        
