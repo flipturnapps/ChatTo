@@ -50,9 +50,9 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		/*SHOULD BE SAFE TO OMIT
+		
 		setContentView(R.layout.activity_main);
-
+		/*SHOULD BE SAFE TO OMIT
 		if (savedInstanceState == null) {
 			getFragmentManager().beginTransaction()
 			.add(R.id.container, new PlaceholderFragment()).commit();
