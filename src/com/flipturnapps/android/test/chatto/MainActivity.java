@@ -50,8 +50,8 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	private Thread thread;
 	private BasicTextEncryptor encryptor;
 	private Location lastLocation;
-	private static final double DEST_LNG = -123.302629;
-	private static final double DEST_LAT = 44.597411;
+	private static final double DEST_LNG = -78.656938;
+	private static final double DEST_LAT = 38;
 
 	static TextViewOutputter textViewOutputter;
 	@Override
