@@ -322,14 +322,21 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 				}
 				if(message.equalsIgnoreCase("regen"))
 				{
-					//todo regenate keys
+					if(client == null)
+					{
+						output("No connection to server.");
+						return;
+					}
+					client.sendText("regen:" + phoneNum);					
 					clearMessageField();
+					return;
 				}
 				if(message.equalsIgnoreCase("setnum"))
 				{
 					IncommingMessageHandler.setPhoneNumber(phoneNum);
 					clearMessageField();
 					clearPhoneNumField();
+					return;
 				}
 				if(client == null)
 				{
