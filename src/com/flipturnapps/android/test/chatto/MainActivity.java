@@ -39,7 +39,7 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity implements Runnable, LocationListener
 {
-	private static final String SERVERIP = "192.168.2.65";
+	private static final String SERVERIP = "192.168.43.172";
 	private ChatToClient client;
 	private TextOutputter toastOutputter;
 	private Thread thread;
@@ -154,6 +154,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		{
 			public void run() 
 			{
+				output("Start connection thread");
 				while (client == null)
 				{
 					try 
@@ -162,6 +163,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 					} catch (IOException e) 
 					{
 						e.printStackTrace();
+						output("Connection to " + SERVERIP + ":" + ChatToServer.PORT + " failed. :(");
 					}
 					try {
 						Thread.sleep(5000);
@@ -170,11 +172,12 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 						e.printStackTrace();
 					}
 				}
+				output("End connection thread");
 			}		
 		};
 		Thread connectToServerThread = new Thread(connectToServerRunner);
 		connectToServerThread.start();
-
+		output("Thread supposedly started.");
 		/*RE-ENABLE to get locations
 		this.runOnUiThread(new Runnable()
 		{
@@ -309,6 +312,17 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 						x--;
 					}
 				}
+				if(message.equalsIgnoreCase("regen"))
+				{
+					//todo regenate keys
+					clearMessageField();
+				}
+				if(message.equalsIgnoreCase("setnum"))
+				{
+					IncommingMessageHandler.setPhoneNumber(phoneNum);
+					clearMessageField();
+					clearPhoneNumField();
+				}
 				if(client == null)
 				{
 					output("Encrypted send failed: no server connection.");
@@ -325,16 +339,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 				encryptor.setPassword(password);
 				String send = "~" + encryptor.encrypt(message) + "~";
 				sendSMS(phoneNum,send);
-				runOnUiThread(new Runnable() 
-				{
-					@Override
-					public void run() 
-					{			
-						EditText et = (EditText) findViewById(R.id.messageField);
-						et.setText("");
-
-					}
-				});
+				clearMessageField();
 			}
 		};
 		Thread sendSMSThread = new Thread(run);
@@ -355,6 +360,32 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		distanceThread.start();
 		 */
 	}
+	private void clearMessageField()
+	{
+		runOnUiThread(new Runnable() 
+		{
+			@Override
+			public void run() 
+			{			
+				EditText et = (EditText) findViewById(R.id.messageField);
+				et.setText("");
+
+			}
+		});
+	}
+	private void clearPhoneNumField()
+	{
+		runOnUiThread(new Runnable() 
+		{
+			@Override
+			public void run() 
+			{			
+				EditText et = (EditText) findViewById(R.id.phoneNumberField);
+				et.setText("");
+
+			}
+		});
+	}
 	private void sendSMS(String phoneNumber, String message)
 	{        
 		String SENT = "SMS_SENT";
@@ -369,7 +400,10 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		//---when the SMS has been sent---
 		registerReceiver(new BroadcastReceiver(){
 			@Override
-			public void onReceive(Context arg0, Intent arg1) {
+			public void onReceive(Context arg0, Intent arg1)
+			{
+				/* DISABLED EXTRA TOASTS
+				switch (getResultCode())
 				switch (getResultCode())
 				{
 				case Activity.RESULT_OK:
@@ -393,13 +427,16 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 							Toast.LENGTH_SHORT).show();
 					break;
 				}
+				*/
 			}
 		}, new IntentFilter(SENT));
 
 		//---when the SMS has been delivered---
 		registerReceiver(new BroadcastReceiver(){
 			@Override
-			public void onReceive(Context arg0, Intent arg1) {
+			public void onReceive(Context arg0, Intent arg1) 
+			{
+				/* DISABLED EXTRA TOASTS
 				switch (getResultCode())
 				{
 				case Activity.RESULT_OK:
@@ -411,13 +448,14 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 							Toast.LENGTH_SHORT).show();
 					break;                        
 				}
+				*/
 			}
 		}, new IntentFilter(DELIVERED));        
 
 		SmsManager sms = SmsManager.getDefault();
 		ArrayList<String> parts = sms.divideMessage(message); 
 		sms.sendMultipartTextMessage(phoneNumber, null, parts, null, null);
-
+output("Message sent.");
 	}
 	void output(String s)
 	{
