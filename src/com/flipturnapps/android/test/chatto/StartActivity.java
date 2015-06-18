@@ -23,6 +23,7 @@ public class StartActivity extends Activity
 	private static final int PICK_CONTACT = 1;
 	static final String CONTACT_NAME_EXTRA = "com.flipturnapps.android.text.chatto.EXTRA.CONTACT_NAME_EXTRA";
 	static final String CONTACT_PHONENUM_EXTRA = "com.flipturnapps.android.text.chatto.EXTRA.CONTACT_PHONENUM_EXTRA";
+	private Thread thread;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) 
 	{
@@ -30,12 +31,15 @@ public class StartActivity extends Activity
 		setContentView(R.layout.activity_start);
 		if (savedInstanceState == null) {
 			getFragmentManager().beginTransaction()
-					.add(R.id.container, new PlaceholderFragment()).commit();
+			.add(R.id.container, new PlaceholderFragment()).commit();
 		}
+		thread = new Thread(new StartThreadRunner());
+		thread.start();
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
+	public boolean onCreateOptionsMenu(Menu menu) 
+	{
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.start, menu);
 		return true;
@@ -88,17 +92,13 @@ public class StartActivity extends Activity
 		return super.onOptionsItemSelected(item);
 	}
 
-	private void output(String string) 
-	{
-		System.out.println("Toasted:" + string);
-		Toast.makeText(this, string, Toast.LENGTH_LONG).show();
-		
-	}
+	
 
 	/**
 	 * A placeholder fragment containing a simple view.
 	 */
-	public static class PlaceholderFragment extends Fragment {
+	public static class PlaceholderFragment extends Fragment
+	{
 
 		public PlaceholderFragment() {
 		}
@@ -111,17 +111,35 @@ public class StartActivity extends Activity
 			return rootView;
 		}
 	}
-	
+
+
+	private class StartThreadRunner implements Runnable
+	{
+		public void run()
+		{
+			try 
+			{
+				Thread.sleep(1000);
+			}
+			catch (InterruptedException e) 
+			{
+				e.printStackTrace();
+			}
+			registerButtonListeners();			
+		}
+	}	
 	private void registerButtonListeners()
 	{
-		
+		this.runOnUiThread(new ButtonListenerRegisterer());
 	}
 	private class ButtonListenerRegisterer implements Runnable
 	{
 		public void run() 
 		{
-			Button button = (Button) findViewById(R.id.button_chooseContact);
-			
+			Button ccButton = (Button) findViewById(R.id.button_chooseContact);
+			ccButton.setOnClickListener(new ChooseContactButtonListener());
+			Button goButton = (Button) findViewById(R.id.button_go);
+			goButton.setOnClickListener(new StartButtonListener());
 		}		
 	}
 	private class ChooseContactButtonListener implements View.OnClickListener
@@ -163,5 +181,11 @@ public class StartActivity extends Activity
 	{
 		Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
 		startActivityForResult(intent, PICK_CONTACT);
+	}
+	private void output(String string) 
+	{
+		System.out.println("Toasted:" + string);
+		Toast.makeText(this, string, Toast.LENGTH_LONG).show();
+
 	}
 }
