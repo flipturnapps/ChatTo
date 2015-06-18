@@ -69,6 +69,7 @@ public class ChatToClient extends Socket implements Runnable
 		}
 	}	
 
+	@Override
 	public void close() throws IOException
 	{
 		super.close();
