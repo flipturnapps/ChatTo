@@ -39,9 +39,11 @@ public class MainActivity extends Activity implements Runnable
 			thread.start();
 		}
 
-
 	}
-
+	public void onBackPressed()
+	{
+		System.exit(-1);
+	}
 	@Override
 	protected void onResume()
 	{

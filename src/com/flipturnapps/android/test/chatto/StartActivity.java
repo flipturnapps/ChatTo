@@ -33,8 +33,11 @@ public class StartActivity extends Activity
 			getFragmentManager().beginTransaction()
 			.add(R.id.container, new PlaceholderFragment()).commit();
 		}
+		if(thread == null)
+		{
 		thread = new Thread(new StartThreadRunner());
 		thread.start();
+		}
 	}
 
 	@Override
