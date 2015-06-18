@@ -31,43 +31,35 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+
 public class MainActivity extends Activity implements Runnable, LocationListener
 {
-	
-	
+
+
 	private TextOutputter toastOutputter;
 	private Thread thread;
 	private BasicTextEncryptor encryptor;
 	private Location lastLocation;
-	
-
-	static TextViewOutputter textViewOutputter;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		if (savedInstanceState == null) {
-			getFragmentManager().beginTransaction()
-			.add(R.id.container, new PlaceholderFragment()).commit();
-		}
+
 		if(thread == null)
 		{
 			thread = new Thread(this);
 			thread.start();
 		}
-		
-		
+
+
 	}
 
-	protected void onResume()
-	{
-		super.onResume();
-		if(thread == null)
-		{
-			thread = new Thread(this);
-			thread.start();
-		}
-	}
+
 
 
 	@Override
@@ -100,8 +92,8 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		}
 
 		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
+		public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) 
+		{
 			View rootView = inflater.inflate(R.layout.fragment_main, container,
 					false);
 			return rootView;
@@ -115,48 +107,19 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	@Override
 	public void run()
 	{
-		
-		
 		toastOutputter = new ToastOutputter(this);
-		textViewOutputter = new TextViewOutputter(this);
 		try {
 			Thread.sleep(5000);
 		} catch (InterruptedException e) 
 		{
 			e.printStackTrace();
 		}
-		
-		final View.OnClickListener buttonListener = new View.OnClickListener()
-		{
 
-			@Override
-			public void onClick(View v)
-			{
-
-				onFieldConfirm();
-
-			}
-		};
 		this.runOnUiThread(new Runnable()
 		{
-
 			@Override
 			public void run()
 			{
-				findViewById(R.id.button1).setOnClickListener(buttonListener);
-			}
-
-		});
-		
-		
-		
-		this.runOnUiThread(new Runnable()
-		{
-
-			@Override
-			public void run()
-			{
-				findViewById(R.id.button1).setOnClickListener(buttonListener);
 				LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 				Location location = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 				manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, getActivity());
@@ -165,8 +128,22 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 			}
 
 		});
-	}
 
+		try {
+			Thread.sleep(15000);
+		} catch (InterruptedException e) 
+		{
+			e.printStackTrace();
+		}
+		GoogleMap map = ((MapFragment) this.getFragmentManager().findFragmentById(R.id.map)).getMap();
+		MarkerOptions mOptions = new MarkerOptions();
+		mOptions.position(new LatLng(lastLocation.getLatitude(),lastLocation.getLongitude()));
+		mOptions.title("Your location");
+		mOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map));
+		Marker locationMarker = map.addMarker(mOptions);
+
+	}
+	/* CURRENTLY DISABLED
 	private String getDistanceOnRoad(double latitude, double longitude, double prelatitute, double prelongitude) 
 	{
 		String result_in_kms = "";
@@ -203,28 +180,13 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		}
 		return result_in_kms;
 	}
+	 */
 	private void useLocation(Location location)
 	{
-		/* CITYFINDER
-		Geocoder gcd = new Geocoder(this.getBaseContext(), Locale.getDefault());
-		List<Address> addresses = null;
-		try {
-			addresses = gcd.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-		} catch (IOException e1) 
-		{
-			e1.printStackTrace();
-		}
-		String city = null;
-		if(addresses != null && addresses.size() > 0)
-		{
-			city = addresses.get(0).getLocality();
 
-		}
-		String s = location.getLongitude() + "\n" + location.getLatitude() + "\n\nMy Current City is: " + city;
-		 */
 		this.lastLocation = location;
 
-		this.toastOutputter.outputText("Location Updated!");
+		output("Location Updated!");
 
 	}
 
@@ -252,51 +214,8 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 
 
 	}
-	public void onFieldConfirm()
-	{
-		/*RE-ENABLE for confirm button to calculate distances
-		Thread distanceThread = new Thread (new Runnable()
-		{
-			@Override
-			public void run() 
-			{
-				String distanceString = getDistanceOnRoad(lastLocation.getLatitude(), lastLocation.getLongitude(), MainActivity.DEST_LAT, MainActivity.DEST_LNG);
-				distanceString = "Distance: " + distanceString;
 
-				textViewOutputter.outputText(distanceString);
-				output(distanceString);
-			}
-		});		
-		distanceThread.start();
-		 */
-	}
-	private void clearMessageField()
-	{
-		runOnUiThread(new Runnable() 
-		{
-			@Override
-			public void run() 
-			{			
-				EditText et = (EditText) findViewById(R.id.messageField);
-				et.setText("");
 
-			}
-		});
-	}
-	private void clearPhoneNumField()
-	{
-		runOnUiThread(new Runnable() 
-		{
-			@Override
-			public void run() 
-			{			
-				EditText et = (EditText) findViewById(R.id.phoneNumberField);
-				et.setText("");
-
-			}
-		});
-	}
-	
 	void output(String s)
 	{
 		System.out.println("Toasted: " + s);
