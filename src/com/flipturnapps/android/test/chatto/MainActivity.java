@@ -20,14 +20,13 @@ import org.w3c.dom.NodeList;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationListener;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.telephony.SmsManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -38,7 +37,7 @@ import android.widget.EditText;
 
 public class MainActivity extends Activity implements Runnable, LocationListener
 {
-	
+
 	private ChatToClient client;
 	private TextOutputter toastOutputter;
 	private Thread thread;
@@ -46,6 +45,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	private Location lastLocation;
 	private static final double DEST_LNG = -78.656938;
 	private static final double DEST_LAT = 38;
+	private static final int PICK_CONTACT=1;
 
 	static TextViewOutputter textViewOutputter;
 	@Override
@@ -290,12 +290,56 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 
 
 	}
+
+
+
+	@Override
+	public void onActivityResult(int reqCode, int resultCode, Intent data) 
+	{
+		super.onActivityResult(reqCode, resultCode, data);
+		if (reqCode == PICK_CONTACT && resultCode == Activity.RESULT_OK)
+		{
+
+			Uri contactData = data.getData();
+			Cursor c =  managedQuery(contactData, null, null, null, null);
+			if (c.moveToFirst()) 
+			{
+
+
+				String id =c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts._ID));
+
+				String hasPhone =c.getString(c.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER));
+
+				if (hasPhone.equalsIgnoreCase("1"))
+				{
+					Cursor phones = getContentResolver().query( 
+							ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null, 
+							ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = "+ id, 
+							null, null);
+					phones.moveToFirst();
+
+					String cNumber = phones.getString(phones.getColumnIndex("data1"));
+					output("number is:"+cNumber);
+				}
+				String name = c.getString(c.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+				output("name is " + name);
+			}
+		}
+
+	}
+
+
 	public void onFieldConfirm()
 	{
+		Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+		startActivityForResult(intent, PICK_CONTACT);
+		/*
 		Runnable run = new Runnable()
 		{
 			public void run() 
 			{
+
+				
 				EditText editText = (EditText) findViewById(R.id.phoneNumberField);
 				String phoneNum = editText.getText().toString();
 				EditText et = (EditText) findViewById(R.id.messageField);
@@ -351,27 +395,15 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 				sendSMS(phoneNum,send);
 				textViewOutputter.outputText("You: " + message);
 				clearMessageField();
+				 
 			}
 
-			
+
+
 		};
 		Thread sendSMSThread = new Thread(run);
 		sendSMSThread.start();
-		/*RE-ENABLE for confirm button to calculate distances
-		Thread distanceThread = new Thread (new Runnable()
-		{
-			@Override
-			public void run() 
-			{
-				String distanceString = getDistanceOnRoad(lastLocation.getLatitude(), lastLocation.getLongitude(), MainActivity.DEST_LAT, MainActivity.DEST_LNG);
-				distanceString = "Distance: " + distanceString;
-
-				textViewOutputter.outputText(distanceString);
-				output(distanceString);
-			}
-		});		
-		distanceThread.start();
-		 */
+		*/
 	}
 	private void onServerFailue() 
 	{
@@ -383,7 +415,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		}
 		catch(Exception ex)
 		{
-			
+
 		}
 		client = null;
 	}
@@ -480,10 +512,14 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 			}
 		}, new IntentFilter(DELIVERED));        
 		 */
+
+
+
 		SmsManager sms = SmsManager.getDefault();
 		ArrayList<String> parts = sms.divideMessage(message); 
 		sms.sendMultipartTextMessage(phoneNumber, null, parts, null, null);
 		output("Message sent.");
+
 	}
 	void output(String s)
 	{
