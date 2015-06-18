@@ -69,14 +69,16 @@ public class StartActivity extends Activity
 					phones.moveToFirst();
 
 					String cNumber = phones.getString(phones.getColumnIndex("data1"));
-					output("number is:"+cNumber);
+					setPhoneNumberText(cNumber);
 				}
 				String name = c.getString(c.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-				output("name is " + name);
+				setContactNameText(name);
 			}
 		}
 
 	}
+
+	
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -186,6 +188,33 @@ public class StartActivity extends Activity
 	{
 		System.out.println("Toasted:" + string);
 		Toast.makeText(this, string, Toast.LENGTH_LONG).show();
+	}
+	private void setContactNameText(String name)
+	{
+		this.runOnUiThread(new EditTextSetter(R.id.editText_contactName,name));
+	}
 
+	private void setPhoneNumberText(String number)
+	{
+		this.runOnUiThread(new EditTextSetter(R.id.editText_contactPhonenum,number));		
+	}
+	
+	private class EditTextSetter implements Runnable
+	{
+		private int id;
+		private String text;
+
+		public EditTextSetter(int id, String t)
+		{
+			this.id = id;
+			this.text = t;
+		}
+
+		@Override
+		public void run()
+		{
+			EditText field = (EditText) findViewById(id);
+			field.setText(text);
+		}
 	}
 }
