@@ -1,35 +1,14 @@
 package com.flipturnapps.android.test.chatto;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.HttpContext;
-import org.jasypt.util.text.BasicTextEncryptor;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import android.app.Activity;
-import android.app.Fragment;
-import android.content.Context;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.EditText;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -44,12 +23,14 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 
 	private TextOutputter toastOutputter;
 	private Thread thread;
-	private BasicTextEncryptor encryptor;
 	private Location lastLocation;
+	private double latitude;
+	private double longitude;
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	protected void onCreate(Bundle savedInstanceState)
+	{
 		super.onCreate(savedInstanceState);
-
+		setContentView(R.layout.activity_main);
 		if(thread == null)
 		{
 			thread = new Thread(this);
@@ -71,7 +52,8 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(MenuItem item) 
+	{
 		// Handle action bar item clicks here. The action bar will
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
@@ -80,24 +62,6 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
-	}
-
-	/**
-	 * A placeholder fragment containing a simple view.
-	 */
-	public static class PlaceholderFragment extends Fragment 
-	{
-
-		public PlaceholderFragment() {
-		}
-
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) 
-		{
-			View rootView = inflater.inflate(R.layout.fragment_main, container,
-					false);
-			return rootView;
-		}
 	}
 
 	MainActivity getActivity()
@@ -114,33 +78,53 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		{
 			e.printStackTrace();
 		}
+/*
+		Looper.prepare();
+		output("hmm?");
+		
+		LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
 
-		this.runOnUiThread(new Runnable()
+	    Criteria criteria = new Criteria();
+	    criteria.setAccuracy(Criteria.ACCURACY_FINE);
+
+	    String provider = locationManager.getBestProvider(criteria, true);
+	    if(provider == null){
+	        provider = LocationManager.GPS_PROVIDER;
+	    }
+	    locationManager.requestLocationUpdates(provider, 1000, 0, this);
+	
+		while(this.lastLocation == null)
 		{
-			@Override
-			public void run()
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) 
 			{
-				LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-				Location location = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-				manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, getActivity());
-				manager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000, 0, getActivity());
-				useLocation(location);
+				e.printStackTrace();
 			}
-
-		});
-
-		try {
-			Thread.sleep(15000);
-		} catch (InterruptedException e) 
-		{
-			e.printStackTrace();
 		}
-		GoogleMap map = ((MapFragment) this.getFragmentManager().findFragmentById(R.id.map)).getMap();
-		MarkerOptions mOptions = new MarkerOptions();
-		mOptions.position(new LatLng(lastLocation.getLatitude(),lastLocation.getLongitude()));
-		mOptions.title("Your location");
-		mOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map));
-		Marker locationMarker = map.addMarker(mOptions);
+		*/
+		latitude = 44.5672590;
+		longitude = -123.2778470;
+			this.runOnUiThread(new Runnable()
+			{
+				
+
+				@Override
+				public void run()
+				{
+					GoogleMap map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
+					MarkerOptions mOptions = new MarkerOptions();
+					mOptions.position(new LatLng(latitude,longitude));
+					mOptions.title("Your location");
+					mOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map));
+					Marker locationMarker = map.addMarker(mOptions);
+					output("marker shown.");
+				}
+
+			});
+		
+		output("done");
+
 
 	}
 	/* CURRENTLY DISABLED
@@ -185,7 +169,6 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	{
 
 		this.lastLocation = location;
-
 		output("Location Updated!");
 
 	}
