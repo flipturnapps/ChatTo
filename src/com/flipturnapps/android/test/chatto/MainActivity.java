@@ -22,17 +22,12 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.ContentObserver;
-import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationListener;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.telephony.SmsManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -43,7 +38,7 @@ import android.widget.EditText;
 
 public class MainActivity extends Activity implements Runnable, LocationListener
 {
-	private static final String SERVERIP = "192.168.43.172";
+	
 	private ChatToClient client;
 	private TextOutputter toastOutputter;
 	private Thread thread;
@@ -66,8 +61,8 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 			thread = new Thread(this);
 			thread.start();
 		}
-		
-		
+
+
 	}
 
 	protected void onResume()
@@ -126,8 +121,8 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	@Override
 	public void run()
 	{
-		
-		
+
+
 		toastOutputter = new ToastOutputter(this);
 		textViewOutputter = new TextViewOutputter(this);
 		try {
@@ -136,7 +131,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		{
 			e.printStackTrace();
 		}
-		
+
 		final View.OnClickListener buttonListener = new View.OnClickListener()
 		{
 
@@ -162,30 +157,30 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		{
 			public void run() 
 			{
-				output("Start connection thread");
-				while (client == null)
+				while (true)
 				{
+					if(client == null)
+					{
+						try 
+						{
+							client = new ChatToClient(toastOutputter);
+						} catch (IOException e) 
+						{
+							e.printStackTrace();
+						}
+					}
 					try 
 					{
-						client = new ChatToClient(toastOutputter,SERVERIP);
-					} catch (IOException e) 
-					{
-						e.printStackTrace();
-						output("Connection to " + SERVERIP + ":" + ChatToServer.PORT + " failed. :(");
-					}
-					try {
 						Thread.sleep(5000);
 					} catch (InterruptedException e)
 					{
 						e.printStackTrace();
 					}
 				}
-				output("End connection thread");
 			}		
 		};
 		Thread connectToServerThread = new Thread(connectToServerRunner);
 		connectToServerThread.start();
-		output("Thread supposedly started.");
 		/*RE-ENABLE to get locations
 		this.runOnUiThread(new Runnable()
 		{
@@ -327,7 +322,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 						output("No connection to server.");
 						return;
 					}
-					client.sendText("regen:" + phoneNum);					
+					client.sendText("regen:" + phoneNum+ ":" + IncommingMessageHandler.getPhoneNumber());					
 					clearMessageField();
 					return;
 				}
@@ -346,7 +341,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 				String password = client.aquireNextResponse(phoneNum);
 				if(password == null)
 				{
-					output("Server failure.");	
+					onServerFailue();
 					return;
 				}
 
@@ -357,6 +352,8 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 				textViewOutputter.outputText("You: " + message);
 				clearMessageField();
 			}
+
+			
 		};
 		Thread sendSMSThread = new Thread(run);
 		sendSMSThread.start();
@@ -375,6 +372,20 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		});		
 		distanceThread.start();
 		 */
+	}
+	private void onServerFailue() 
+	{
+		output("Server failure.");
+		try
+		{
+			client.sendText("close");
+			client.close();
+		}
+		catch(Exception ex)
+		{
+			
+		}
+		client = null;
 	}
 	private void clearMessageField()
 	{
@@ -404,6 +415,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	}
 	private void sendSMS(String phoneNumber, String message)
 	{        
+		/*
 		String SENT = "SMS_SENT";
 		String DELIVERED = "SMS_DELIVERED";
 
@@ -418,7 +430,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 			@Override
 			public void onReceive(Context arg0, Intent arg1)
 			{
-				/* DISABLED EXTRA TOASTS
+				 DISABLED EXTRA TOASTS
 				switch (getResultCode())
 				switch (getResultCode())
 				{
@@ -443,7 +455,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 							Toast.LENGTH_SHORT).show();
 					break;
 				}
-				 */
+
 			}
 		}, new IntentFilter(SENT));
 
@@ -452,7 +464,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 			@Override
 			public void onReceive(Context arg0, Intent arg1) 
 			{
-				/* DISABLED EXTRA TOASTS
+				 DISABLED EXTRA TOASTS
 				switch (getResultCode())
 				{
 				case Activity.RESULT_OK:
@@ -464,10 +476,10 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 							Toast.LENGTH_SHORT).show();
 					break;                        
 				}
-				 */
+
 			}
 		}, new IntentFilter(DELIVERED));        
-
+		 */
 		SmsManager sms = SmsManager.getDefault();
 		ArrayList<String> parts = sms.divideMessage(message); 
 		sms.sendMultipartTextMessage(phoneNumber, null, parts, null, null);
