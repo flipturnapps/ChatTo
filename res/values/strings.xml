@@ -3,8 +3,8 @@
 
     <string name="app_name">ChatTo</string>
     <string name="welcome_message">Welcome to ChatTo. \nWho do you want to contact?</string>
-    <string name="contact_name_label"    >Contact Name:  </string>
-    <string name="contact_phonenum_label">Contact Phone#:</string>
+    <string name="contact_name_label"    >Name:  </string>
+    <string name="contact_phonenum_label">Phone#:</string>
     <string name="choose_contact_button_label">Choose a contact...</string>
     <string name="start_main_activity_button_label">Start</string>
     <string name="action_settings">Settings</string>

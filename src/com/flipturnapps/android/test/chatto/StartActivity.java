@@ -2,15 +2,27 @@ package com.flipturnapps.android.test.chatto;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.BaseColumns;
+import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
-public class StartActivity extends Activity {
+public class StartActivity extends Activity 
+{
 
+	private static final int PICK_CONTACT = 1;
+	static final String CONTACT_NAME_EXTRA = "com.flipturnapps.android.text.chatto.EXTRA.CONTACT_NAME_EXTRA";
+	static final String CONTACT_PHONENUM_EXTRA = "com.flipturnapps.android.text.chatto.EXTRA.CONTACT_PHONENUM_EXTRA";
 	@Override
 	protected void onCreate(Bundle savedInstanceState) 
 	{
@@ -28,6 +40,39 @@ public class StartActivity extends Activity {
 		getMenuInflater().inflate(R.menu.start, menu);
 		return true;
 	}
+	public void onActivityResult(int reqCode, int resultCode, Intent data) 
+	{
+		super.onActivityResult(reqCode, resultCode, data);
+		if (reqCode == PICK_CONTACT && resultCode == Activity.RESULT_OK)
+		{
+
+			Uri contactData = data.getData();
+			Cursor c =  managedQuery(contactData, null, null, null, null);
+			if (c.moveToFirst()) 
+			{
+
+
+				String id =c.getString(c.getColumnIndexOrThrow(BaseColumns._ID));
+
+				String hasPhone =c.getString(c.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER));
+
+				if (hasPhone.equalsIgnoreCase("1"))
+				{
+					Cursor phones = getContentResolver().query( 
+							ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null, 
+							ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = "+ id, 
+							null, null);
+					phones.moveToFirst();
+
+					String cNumber = phones.getString(phones.getColumnIndex("data1"));
+					output("number is:"+cNumber);
+				}
+				String name = c.getString(c.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+				output("name is " + name);
+			}
+		}
+
+	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -35,10 +80,19 @@ public class StartActivity extends Activity {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		if (id == R.id.action_settings) {
+		if (id == R.id.action_settings) 
+		{
+			output("Settings are unavailible in this version.");
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	private void output(String string) 
+	{
+		System.out.println("Toasted:" + string);
+		Toast.makeText(this, string, Toast.LENGTH_LONG).show();
+		
 	}
 
 	/**
@@ -56,5 +110,58 @@ public class StartActivity extends Activity {
 					container, false);
 			return rootView;
 		}
+	}
+	
+	private void registerButtonListeners()
+	{
+		
+	}
+	private class ButtonListenerRegisterer implements Runnable
+	{
+		public void run() 
+		{
+			Button button = (Button) findViewById(R.id.button_chooseContact);
+			
+		}		
+	}
+	private class ChooseContactButtonListener implements View.OnClickListener
+	{		
+		public void onClick(View v) 
+		{
+			onChooseContactButtonClicked();			
+		}		
+	}
+	private class StartButtonListener implements View.OnClickListener
+	{		
+		public void onClick(View v) 
+		{
+			onStartButtonClicked();		
+		}		
+	}
+	private void onStartButtonClicked()
+	{
+		String contactName = getContactNameText();
+		String phoneNum = getPhoneNumText();
+		Intent intent = new Intent(this, MainActivity.class);
+		intent.putExtra(StartActivity.CONTACT_NAME_EXTRA, contactName);
+		intent.putExtra(StartActivity.CONTACT_PHONENUM_EXTRA, phoneNum);
+		this.startActivity(intent);
+	}
+	private String getPhoneNumText() 
+	{
+		EditText field = (EditText) findViewById(R.id.editText_contactPhonenum);
+		return field.getText().toString();
+	}
+
+	private String getContactNameText() 
+	{
+		EditText field = (EditText) findViewById(R.id.editText_contactName);
+		return field.getText().toString();
+	}
+
+	private void onChooseContactButtonClicked()
+	{
+		Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+		startActivityForResult(intent, PICK_CONTACT);
 	}
 }

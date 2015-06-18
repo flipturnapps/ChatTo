@@ -4,14 +4,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.jasypt.util.text.BasicTextEncryptor;
+
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.BaseColumns;
-import android.provider.ContactsContract;
 import android.telephony.SmsManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -27,7 +23,6 @@ public class MainActivity extends Activity implements Runnable
 	private TextOutputter toastOutputter;
 	private Thread thread;
 	private BasicTextEncryptor encryptor;
-	private static final int PICK_CONTACT=1;
 
 	static TextViewOutputter textViewOutputter;
 	@Override
@@ -74,6 +69,7 @@ public class MainActivity extends Activity implements Runnable
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
+			output("Settings are unavailible in this version.");
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -165,59 +161,10 @@ public class MainActivity extends Activity implements Runnable
 		};
 		Thread connectToServerThread = new Thread(connectToServerRunner);
 		connectToServerThread.start();
-
-
-
-
-
-
 	}
-
-
-
-
-
-	@Override
-	public void onActivityResult(int reqCode, int resultCode, Intent data) 
-	{
-		super.onActivityResult(reqCode, resultCode, data);
-		if (reqCode == PICK_CONTACT && resultCode == Activity.RESULT_OK)
-		{
-
-			Uri contactData = data.getData();
-			Cursor c =  managedQuery(contactData, null, null, null, null);
-			if (c.moveToFirst()) 
-			{
-
-
-				String id =c.getString(c.getColumnIndexOrThrow(BaseColumns._ID));
-
-				String hasPhone =c.getString(c.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER));
-
-				if (hasPhone.equalsIgnoreCase("1"))
-				{
-					Cursor phones = getContentResolver().query( 
-							ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null, 
-							ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = "+ id, 
-							null, null);
-					phones.moveToFirst();
-
-					String cNumber = phones.getString(phones.getColumnIndex("data1"));
-					output("number is:"+cNumber);
-				}
-				String name = c.getString(c.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-				output("name is " + name);
-			}
-		}
-
-	}
-
-
 	public void onFieldConfirm()
 	{
-		Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
-		startActivityForResult(intent, PICK_CONTACT);
-		/*
+
 		Runnable run = new Runnable()
 		{
 			public void run() 
@@ -287,7 +234,7 @@ public class MainActivity extends Activity implements Runnable
 		};
 		Thread sendSMSThread = new Thread(run);
 		sendSMSThread.start();
-		 */
+
 	}
 	private void onServerFailue() 
 	{
