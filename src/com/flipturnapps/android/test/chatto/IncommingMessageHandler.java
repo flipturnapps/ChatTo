@@ -10,38 +10,54 @@ public class IncommingMessageHandler
 {
 
 	private BasicTextEncryptor encryptor;
+	private static String friendNumber;
 	private static String phoneNumber;
-	
+
 	public void handleNewMessage(String source, String body, Context context, Intent intent) 
 	{
-		if(phoneNumber == null)
+		source = MainActivity.removeNonNumberValues(source);
+		if(source.equals(friendNumber))
 		{
-			TelephonyManager tMgr = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
-			phoneNumber = tMgr.getLine1Number();
-		}
-		String password = ChatToClient.self.aquireNextResponse(phoneNumber);	
+			source = "Them";
+			if(phoneNumber == null)
+			{
+				TelephonyManager tMgr = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
+				phoneNumber = tMgr.getLine1Number();
+			}
+			String password = ChatToClient.self.aquireNextResponse(phoneNumber);	
 
-		
+
 			encryptor = new BasicTextEncryptor();
-		try
-		{
-			encryptor.setPassword(password);
-			String toBeDecrypted = body.split("~")[1];
-			String decryptedMessage = encryptor.decrypt(toBeDecrypted);
-			MainActivity.textViewOutputter.outputText(source + ": " + decryptedMessage);
+			try
+			{
+				encryptor.setPassword(password);
+				String toBeDecrypted = body.split("~")[1];
+				String decryptedMessage = encryptor.decrypt(toBeDecrypted);
+				MainActivity.textViewOutputter.outputText(source + ": " + decryptedMessage);
+			}
+			catch(Exception ex)
+			{
+				MainActivity.textViewOutputter.outputText(source + ": <See messaging app.>");
+			}
 		}
-		catch(Exception ex)
+		else
 		{
-			MainActivity.textViewOutputter.outputText(source + ": <See messaging app.>");
+			System.out.println("source mismatch: source:" + source + " friendnum:" + friendNumber);
 		}
 
 	}
-	
-	public static String getPhoneNumber() {
+
+	public static String getThisPhoneNumber() {
 		return phoneNumber;
 	}
-	public static void setPhoneNumber(String phoneNumber) {
+	public static void setThisPhoneNumber(String phoneNumber) {
 		IncommingMessageHandler.phoneNumber = phoneNumber;
+	}
+	public static String getFriendPhoneNumber() {
+		return friendNumber;
+	}
+	public static void setFriendPhoneNumber(String num) {
+		IncommingMessageHandler.friendNumber = num;
 	}
 
 }

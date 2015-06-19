@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.TextView;
 
 public class MainActivity extends Activity implements Runnable
 {
@@ -23,6 +24,8 @@ public class MainActivity extends Activity implements Runnable
 	private TextOutputter toastOutputter;
 	private Thread thread;
 	private BasicTextEncryptor encryptor;
+	private String phoneNum;
+	private String contactName;
 
 	static TextViewOutputter textViewOutputter;
 	@Override
@@ -33,12 +36,34 @@ public class MainActivity extends Activity implements Runnable
 			getFragmentManager().beginTransaction()
 			.add(R.id.container, new PlaceholderFragment()).commit();
 		}
+		phoneNum = this.getIntent().getExtras().getString(StartActivity.CONTACT_PHONENUM_EXTRA);
+		contactName = this.getIntent().getExtras().getString(StartActivity.CONTACT_NAME_EXTRA);
+		phoneNum = removeNonNumberValues(phoneNum);
 		if(thread == null)
 		{
 			thread = new Thread(this);
 			thread.start();
 		}
 
+	}
+	public static String removeNonNumberValues(String s)
+	{
+		for(int x = 0; x < s.length(); x++)
+		{
+			boolean charGood = false;
+			char ch = s.charAt(x);
+			for(int y = 0; y < 10; y++)
+			{
+				if((ch + "").equals(y+""))
+					charGood = true;
+			}
+			if(!charGood)
+			{
+				s= s.substring(0,x) + s.substring(x+1,s.length()); 
+				x--;
+			}
+		}
+		return s;
 	}
 	public void onBackPressed()
 	{
@@ -102,17 +127,15 @@ public class MainActivity extends Activity implements Runnable
 	@Override
 	public void run()
 	{
-
-
 		toastOutputter = new ToastOutputter(this);
 		textViewOutputter = new TextViewOutputter(this);
 		try {
-			Thread.sleep(5000);
+			Thread.sleep(1000);
 		} catch (InterruptedException e) 
 		{
 			e.printStackTrace();
 		}
-
+		IncommingMessageHandler.setFriendPhoneNumber(this.phoneNum);
 		final View.OnClickListener buttonListener = new View.OnClickListener()
 		{
 
@@ -130,7 +153,9 @@ public class MainActivity extends Activity implements Runnable
 			@Override
 			public void run()
 			{
-				findViewById(R.id.button1).setOnClickListener(buttonListener);
+				findViewById(R.id.button_sendMessage).setOnClickListener(buttonListener);
+				TextView tView = ((TextView) (findViewById(R.id.textView_messageArea)));
+				tView.setText(tView.getText() + " " + contactName + ":");
 			}
 
 		});
@@ -172,26 +197,9 @@ public class MainActivity extends Activity implements Runnable
 			public void run() 
 			{
 
-
-				EditText editText = (EditText) findViewById(R.id.phoneNumberField);
-				String phoneNum = editText.getText().toString();
-				EditText et = (EditText) findViewById(R.id.messageField);
+				EditText et = (EditText) findViewById(R.id.editText_messageWriting);
 				String message = et.getText().toString();
-				for(int x = 0; x < phoneNum.length(); x++)
-				{
-					boolean charGood = false;
-					char ch = phoneNum.charAt(x);
-					for(int y = 0; y < 10; y++)
-					{
-						if((ch + "").equals(y+""))
-							charGood = true;
-					}
-					if(!charGood)
-					{
-						phoneNum= phoneNum.substring(0,x) + phoneNum.substring(x+1,phoneNum.length()); 
-						x--;
-					}
-				}
+
 				if(message.equalsIgnoreCase("regen"))
 				{
 					if(client == null)
@@ -199,15 +207,21 @@ public class MainActivity extends Activity implements Runnable
 						output("No connection to server.");
 						return;
 					}
-					client.sendText("regen:" + phoneNum+ ":" + IncommingMessageHandler.getPhoneNumber());					
+					client.sendText("regen:" + phoneNum+ ":" + IncommingMessageHandler.getThisPhoneNumber());					
 					clearMessageField();
 					return;
 				}
-				if(message.equalsIgnoreCase("setnum"))
+				if(message.startsWith("snm"))
 				{
-					IncommingMessageHandler.setPhoneNumber(phoneNum);
+					try
+					{
+						IncommingMessageHandler.setThisPhoneNumber(message.split(":")[1]);
+					}
+					catch(Exception ex)
+					{
+
+					}
 					clearMessageField();
-					clearPhoneNumField();
 					return;
 				}
 				if(client == null)
@@ -226,7 +240,7 @@ public class MainActivity extends Activity implements Runnable
 				encryptor.setPassword(password);
 				String send = "~" + encryptor.encrypt(message) + "~";
 				sendSMS(phoneNum,send);
-				textViewOutputter.outputText("You: " + message);
+				textViewOutputter.outputText("You : " + message);
 				clearMessageField();
 
 			}
@@ -259,20 +273,7 @@ public class MainActivity extends Activity implements Runnable
 			@Override
 			public void run() 
 			{			
-				EditText et = (EditText) findViewById(R.id.messageField);
-				et.setText("");
-
-			}
-		});
-	}
-	private void clearPhoneNumField()
-	{
-		runOnUiThread(new Runnable() 
-		{
-			@Override
-			public void run() 
-			{			
-				EditText et = (EditText) findViewById(R.id.phoneNumberField);
+				EditText et = (EditText) findViewById(R.id.editText_messageWriting);
 				et.setText("");
 
 			}
