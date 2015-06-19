@@ -6,9 +6,9 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -17,24 +17,20 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MainActivity extends Activity implements Runnable, LocationListener
+public class MainActivity extends Activity implements  LocationListener
 {
 
 
-	private TextOutputter toastOutputter;
-	private Thread thread;
-	private Location lastLocation;
-	
+
+	private boolean marker;
+	private LocationManager locationManager;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		if(thread == null)
-		{
-			thread = new Thread(this);
-			thread.start();
-		}
+		new Thread(new UIThreadRunner("delay")).start();
 
 
 	}
@@ -67,115 +63,88 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	{
 		return this;
 	}
-	@Override
-	public void run()
+
+	private class UIThreadRunner implements Runnable
 	{
-		toastOutputter = new ToastOutputter(this);
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) 
+		private String text;
+		
+
+		public UIThreadRunner(String toastText)
 		{
-			e.printStackTrace();
+			text = toastText;
 		}
 
-		
-		
-		
-		
-			this.runOnUiThread(new Runnable()
+		@Override
+		public void run()
+		{
+			System.out.println("hello?");
+			if(text != null)
 			{
-				
-
-				@Override
-				public void run()
+				if(text.equals("delay"))
 				{
-					LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-
-				    Criteria criteria = new Criteria();
-				    criteria.setAccuracy(Criteria.ACCURACY_FINE);
-
-				    String provider = locationManager.getBestProvider(criteria, true);
-				    		if(provider == null){
-				        provider = LocationManager.GPS_PROVIDER;
-				    }
-				    locationManager.requestLocationUpdates(provider, 1000, 0, getActivity());
-				    output("waiting for ll to not be null");
-					while(lastLocation == null)
-					{
-						try {
-							Thread.sleep(1000);
-						} catch (InterruptedException e) 
-						{
-							e.printStackTrace();
-						}
+					try {
+						Thread.sleep(2000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
-					output("ll not null");
+					runOnUiThread(new UIThreadRunner(null));
+					return;
+				}
+				Toast.makeText(getActivity(), text, Toast.LENGTH_LONG).show();
+				return;				
+			}
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+			locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10, getActivity());
+			locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 10, getActivity());
+			toast("added location",false);
+			Location l = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+			if(l == null)
+				locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+			if(l != null)
+			useLocation(l);
+			else
+				toast("l is null",false);
+		}
+	}
+	private void useLocation(final Location location)
+	{
+		if(!marker)
+		{
+			runOnUiThread(new Runnable()
+			{
+				@Override
+				public void run() 
+				{
 					GoogleMap map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
 					MarkerOptions mOptions = new MarkerOptions();
-					mOptions.position(new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()));
+					mOptions.position(new LatLng(location.getLatitude(), location.getLongitude()));
 					mOptions.title("Your location");
 					mOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map));
 					Marker locationMarker = map.addMarker(mOptions);
-					output("marker shown.");
+					marker = true;
+					toast("Marker added",false);	
+					//locationManager.removeUpdates(getActivity());
 				}
 
 			});
-		
-		output("done");
 
-
-	}
-	/* CURRENTLY DISABLED
-	private String getDistanceOnRoad(double latitude, double longitude, double prelatitute, double prelongitude) 
-	{
-		String result_in_kms = "";
-		String url = "http://maps.google.com/maps/api/directions/xml?origin="
-				+ latitude + "," + longitude + "&destination=" + prelatitute
-				+ "," + prelongitude + "&sensor=false&units=metric";
-		String tag[] = { "text" };
-		HttpResponse response = null;
-		try {
-			HttpClient httpClient = new DefaultHttpClient();
-			HttpContext localContext = new BasicHttpContext();
-			HttpPost httpPost = new HttpPost(url);
-			response = httpClient.execute(httpPost, localContext);
-			InputStream is = response.getEntity().getContent();
-			DocumentBuilder builder = DocumentBuilderFactory.newInstance()
-					.newDocumentBuilder();
-			Document doc = builder.parse(is);
-			if (doc != null) {
-				NodeList nl;
-				ArrayList<String> args = new ArrayList<String>();
-				for (String s : tag) {
-					nl = doc.getElementsByTagName(s);
-					if (nl.getLength() > 0) {
-						Node node = nl.item(nl.getLength() - 1);
-						args.add(node.getTextContent());
-					} else {
-						args.add(" - ");
-					}
-				}
-				result_in_kms = String.format("%s", args.get(0));
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
-		return result_in_kms;
-	}
-	 */
-	private void useLocation(Location location)
-	{
-
-		this.lastLocation = location;
-		output("Location Updated!");
-
+		else
+			toast("Marker already added",true);
 	}
 
 	@Override
 	public void onLocationChanged(Location l)
 	{
+		toast("onlicationchange",true);
 		useLocation(l);
-
 	}
 
 	@Override
@@ -197,10 +166,15 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	}
 
 
-	void output(String s)
+	void toast(String s, boolean needUI)
 	{
 		System.out.println("Toasted: " + s);
-		toastOutputter.outputText(s);
+		if(!needUI)
+		{
+			Toast.makeText(this, s, Toast.LENGTH_LONG).show();
+			return;
+		}
+		this.runOnUiThread(new UIThreadRunner(s));
 	}
 
 
