@@ -240,7 +240,7 @@ public class MainActivity extends Activity implements Runnable
 				encryptor.setPassword(password);
 				String send = "~" + encryptor.encrypt(message) + "~";
 				sendSMS(phoneNum,send);
-				textViewOutputter.outputText("You : " + message);
+				textViewOutputter.outputText("You  : " + message);
 				clearMessageField();
 
 			}
