@@ -24,8 +24,7 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 	private TextOutputter toastOutputter;
 	private Thread thread;
 	private Location lastLocation;
-	private double latitude;
-	private double longitude;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
@@ -78,33 +77,11 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 		{
 			e.printStackTrace();
 		}
-/*
-		Looper.prepare();
-		output("hmm?");
+
 		
-		LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-
-	    Criteria criteria = new Criteria();
-	    criteria.setAccuracy(Criteria.ACCURACY_FINE);
-
-	    String provider = locationManager.getBestProvider(criteria, true);
-	    if(provider == null){
-	        provider = LocationManager.GPS_PROVIDER;
-	    }
-	    locationManager.requestLocationUpdates(provider, 1000, 0, this);
-	
-		while(this.lastLocation == null)
-		{
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) 
-			{
-				e.printStackTrace();
-			}
-		}
-		*/
-		latitude = 44.5672590;
-		longitude = -123.2778470;
+		
+		
+		
 			this.runOnUiThread(new Runnable()
 			{
 				
@@ -112,9 +89,30 @@ public class MainActivity extends Activity implements Runnable, LocationListener
 				@Override
 				public void run()
 				{
+					LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+				    Criteria criteria = new Criteria();
+				    criteria.setAccuracy(Criteria.ACCURACY_FINE);
+
+				    String provider = locationManager.getBestProvider(criteria, true);
+				    		if(provider == null){
+				        provider = LocationManager.GPS_PROVIDER;
+				    }
+				    locationManager.requestLocationUpdates(provider, 1000, 0, getActivity());
+				    output("waiting for ll to not be null");
+					while(lastLocation == null)
+					{
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) 
+						{
+							e.printStackTrace();
+						}
+					}
+					output("ll not null");
 					GoogleMap map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
 					MarkerOptions mOptions = new MarkerOptions();
-					mOptions.position(new LatLng(latitude,longitude));
+					mOptions.position(new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()));
 					mOptions.title("Your location");
 					mOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map));
 					Marker locationMarker = map.addMarker(mOptions);
