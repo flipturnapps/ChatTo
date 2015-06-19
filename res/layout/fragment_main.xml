@@ -8,60 +8,36 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.flipturnapps.android.test.chatto.MainActivity$PlaceholderFragment" >
 
-    <EditText
-        android:id="@+id/phoneNumberField"
+    <TextView
+        android:id="@+id/textView_messageArea"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:scrollbars="vertical"
+        android:singleLine="false"
+        android:text="@string/message_area_start_text"
+        android:textSize="12sp" />
+
+    <EditText
+        android:id="@+id/editText_messageWriting"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView_messageArea"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_toLeftOf="@+id/button1"
-        android:ems="10"
-        android:inputType="phone" >
-
-        <requestFocus />
-    </EditText>
-
-    <Button
-        android:id="@+id/button1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/phoneNumberField"
-        android:layout_alignBottom="@+id/phoneNumberField"
-        android:layout_alignParentRight="true"
-        android:text="@string/confirmbuttontext" />
-
-    <ScrollView
-        android:id="@+id/scrollView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/phoneNumberField"
-        android:layout_alignParentTop="true"
-        android:layout_alignRight="@+id/button1" >
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" >
-
-            <TextView
-                android:id="@+id/textView1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:singleLine="false"
-                android:text="@string/messageareastart" />
-        </LinearLayout>
-    </ScrollView>
-
-    <EditText
-        android:id="@+id/messageField"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/button1"
-        android:layout_alignParentLeft="true"
-        android:layout_alignRight="@+id/button1"
+        android:layout_alignStart="@+id/textView_messageArea"
+        android:layout_toLeftOf="@+id/button_sendMessage"
+        android:layout_toStartOf="@+id/button_sendMessage"
         android:ems="10"
         android:inputType="textMultiLine"
         android:maxLines="4"
         android:scrollHorizontally="@bool/messageTextScrollHorizontally" />
+
+    <Button
+        android:id="@+id/button_sendMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/editText_messageWriting"
+        android:text="@string/confirmbuttontext" />
 
 </RelativeLayout>

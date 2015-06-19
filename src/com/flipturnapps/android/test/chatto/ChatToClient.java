@@ -9,7 +9,7 @@ import java.net.Socket;
 public class ChatToClient extends Socket implements Runnable
 {
 
-	private static final String SERVERIP = "192.168.43.172";
+	private static final String SERVERIP = "10.1.2.240";
 	private static final int PORT = 12346;
 	private static final long DEFAULT_WAIT_TIME = 3000;
 	private boolean alive = true;
@@ -69,6 +69,7 @@ public class ChatToClient extends Socket implements Runnable
 		}
 	}	
 
+	@Override
 	public void close() throws IOException
 	{
 		super.close();

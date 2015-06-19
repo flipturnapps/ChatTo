@@ -22,7 +22,7 @@ public class TextViewOutputter implements TextOutputter {
 			public void run()
 			{
 
-				TextView area = (TextView) activity.findViewById(R.id.textView1);
+				TextView area = (TextView) activity.findViewById(R.id.textView_messageArea);
 				String text = area.getText().toString();
 				text += "\n"  + s;
 				area.setText(text);
