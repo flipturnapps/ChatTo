@@ -2,7 +2,8 @@ package com.flipturnapps.android.test.chatto;
 
 import android.app.Activity;
 
-public class TextViewOutputter implements TextOutputter {
+public class TextViewOutputter 
+{
 
 	private Activity activity;
 	public TextViewOutputter(MainActivity mainActivity) 
@@ -12,8 +13,8 @@ public class TextViewOutputter implements TextOutputter {
 
 
 
-	@Override
-	public void outputText(final String s) 
+	
+	public void outputText(final String s, final int colorId) 
 	{
 		activity.runOnUiThread(new Runnable()
 		{
@@ -22,7 +23,7 @@ public class TextViewOutputter implements TextOutputter {
 			{
 
 				TextViewArea area = (TextViewArea) activity.findViewById(R.id.textViewArea_messageArea);
-				area.addLine(s, area.getResources().getColor(R.color.text_color_recieve));
+				area.addLine(s, area.getResources().getColor(colorId));
 
 			}
 		});		

@@ -14,16 +14,16 @@ public class ChatToClient extends Socket implements Runnable
 	private static final long DEFAULT_WAIT_TIME = 3000;
 	private boolean alive = true;
 	private Thread myThread;
-	private TextOutputter outputter;
 	private PrintWriter writer;
 	private String lastResponse;
+	private MainActivity activity;
 	static ChatToClient self;
-	public ChatToClient(TextOutputter out) throws IOException 
+	public ChatToClient(MainActivity act) throws IOException 
 	{
 		super(SERVERIP, PORT);
 		myThread = new Thread(this);
 		myThread.start();
-		this.outputter = out;
+		this.activity = act;
 
 	}
 
@@ -37,7 +37,7 @@ public class ChatToClient extends Socket implements Runnable
 		{
 			e1.printStackTrace();
 		}
-		this.outputter.outputText("Connection established");
+		activity.toast("Connection established",true);
 		self = this;
 
 

@@ -33,11 +33,11 @@ public class IncommingMessageHandler
 				encryptor.setPassword(password);
 				String toBeDecrypted = body.split("~")[1];
 				String decryptedMessage = encryptor.decrypt(toBeDecrypted);
-				MainActivity.textViewOutputter.outputText(source + ": " + decryptedMessage);
+				MainActivity.textViewOutputter.outputText(source + ": " + decryptedMessage,R.color.text_color_recieve);
 			}
 			catch(Exception ex)
 			{
-				MainActivity.textViewOutputter.outputText(source + ": <See messaging app.>");
+				MainActivity.textViewOutputter.outputText(source + ": <See messaging app.>",R.color.text_color_recieve);
 			}
 		}
 		else

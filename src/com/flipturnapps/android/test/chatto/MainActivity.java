@@ -15,18 +15,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.Toast;
 
 public class MainActivity extends Activity implements Runnable
 {
 
 	private ChatToClient client;
-	private TextOutputter toastOutputter;
 	private Thread thread;
 	private BasicTextEncryptor encryptor;
 	private String phoneNum;
 	private String contactName;
-
 	static TextViewOutputter textViewOutputter;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -96,7 +96,7 @@ public class MainActivity extends Activity implements Runnable
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
-			output("Settings are unavailible in this version.");
+			toast("Settings are unavailible in this version.",false);
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -127,7 +127,6 @@ public class MainActivity extends Activity implements Runnable
 	@Override
 	public void run()
 	{
-		toastOutputter = new ToastOutputter(this);
 		textViewOutputter = new TextViewOutputter(this);
 		try {
 			Thread.sleep(1000);
@@ -154,7 +153,7 @@ public class MainActivity extends Activity implements Runnable
 			public void run()
 			{
 				findViewById(R.id.button_sendMessage).setOnClickListener(buttonListener);
-				textViewOutputter.outputText("hai");
+				textViewOutputter.outputText("Messaging with " + contactName + ":", R.color.text_color_send);
 			}
 
 		});
@@ -169,7 +168,7 @@ public class MainActivity extends Activity implements Runnable
 					{
 						try 
 						{
-							client = new ChatToClient(toastOutputter);
+							client = new ChatToClient(getActivity());
 						} catch (IOException e) 
 						{
 							e.printStackTrace();
@@ -204,7 +203,7 @@ public class MainActivity extends Activity implements Runnable
 				{
 					if(client == null)
 					{
-						output("No connection to server.");
+						toast("No connection to server.",true);
 						return;
 					}
 					client.sendText("regen:" + phoneNum+ ":" + IncommingMessageHandler.getThisPhoneNumber());					
@@ -226,7 +225,7 @@ public class MainActivity extends Activity implements Runnable
 				}
 				if(client == null)
 				{
-					output("Encrypted send failed: no server connection.");
+					toast("Encrypted send failed: no server connection.",true);
 					return;
 				}
 				String password = client.aquireNextResponse(phoneNum);
@@ -240,7 +239,7 @@ public class MainActivity extends Activity implements Runnable
 				encryptor.setPassword(password);
 				String send = "~" + encryptor.encrypt(message) + "~";
 				sendSMS(phoneNum,send);
-				textViewOutputter.outputText("You  : " + message);
+				textViewOutputter.outputText("You   : " + message,R.color.text_color_send);
 				clearMessageField();
 
 			}
@@ -254,7 +253,7 @@ public class MainActivity extends Activity implements Runnable
 	}
 	private void onServerFailue() 
 	{
-		output("Server failure.");
+		toast("Server failure.",true);
 		try
 		{
 			client.sendText("close");
@@ -352,13 +351,33 @@ public class MainActivity extends Activity implements Runnable
 		SmsManager sms = SmsManager.getDefault();
 		ArrayList<String> parts = sms.divideMessage(message); 
 		sms.sendMultipartTextMessage(phoneNumber, null, parts, null, null);
-		output("Message sent.");
+		toast("Message sent.",true);
 
 	}
-	void output(String s)
+	public void toast(String s, boolean needUI)
 	{
+		if(!needUI)
+			new Toaster(s).run();
+		else
+			this.runOnUiThread(new Toaster(s));
 		System.out.println("Toasted: " + s);
-		toastOutputter.outputText(s);
+	}
+	private class Toaster implements Runnable
+	{
+
+		private CharSequence text;
+
+		public Toaster(String s) 
+		{
+			text = s;
+		}
+
+		@Override
+		public void run() 
+		{
+			Toast.makeText(getActivity(),text, Toast.LENGTH_SHORT);			
+		}
+		
 	}
 
 
