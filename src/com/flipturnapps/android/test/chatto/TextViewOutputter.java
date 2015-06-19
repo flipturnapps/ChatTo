@@ -1,7 +1,6 @@
 package com.flipturnapps.android.test.chatto;
 
 import android.app.Activity;
-import android.widget.TextView;
 
 public class TextViewOutputter implements TextOutputter {
 
@@ -22,10 +21,8 @@ public class TextViewOutputter implements TextOutputter {
 			public void run()
 			{
 
-				TextView area = (TextView) activity.findViewById(R.id.textView_messageArea);
-				String text = area.getText().toString();
-				text += "\n"  + s;
-				area.setText(text);
+				TextViewArea area = (TextViewArea) activity.findViewById(R.id.textViewArea_messageArea);
+				area.addLine(s, area.getResources().getColor(R.color.text_color_recieve));
 
 			}
 		});		

@@ -8,23 +8,21 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.flipturnapps.android.test.chatto.MainActivity$PlaceholderFragment" >
 
-    <TextView
-        android:id="@+id/textView_messageArea"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:scrollbars="vertical"
-        android:singleLine="false"
-        android:text="@string/message_area_start_text"
-        android:textSize="12sp" />
+   <com.flipturnapps.android.test.chatto.TextViewArea	
+        android:id="@+id/textViewArea_messageArea"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:scrollbars="vertical" />
+    
 
     <EditText
         android:id="@+id/editText_messageWriting"
+        android:labelFor="@+id/editText_messageWriting"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/textView_messageArea"
         android:layout_alignParentBottom="true"
-        android:layout_alignStart="@+id/textView_messageArea"
-        android:layout_toLeftOf="@+id/button_sendMessage"
+        android:layout_alignStart="@+id/textViewArea_messageArea"
         android:layout_toStartOf="@+id/button_sendMessage"
         android:ems="10"
         android:inputType="textMultiLine"
@@ -36,7 +34,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
         android:layout_alignTop="@+id/editText_messageWriting"
         android:text="@string/confirmbuttontext" />
 

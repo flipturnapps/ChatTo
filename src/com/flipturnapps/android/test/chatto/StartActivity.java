@@ -47,6 +47,7 @@ public class StartActivity extends Activity
 		getMenuInflater().inflate(R.menu.start, menu);
 		return true;
 	}
+	@Override
 	public void onActivityResult(int reqCode, int resultCode, Intent data) 
 	{
 		super.onActivityResult(reqCode, resultCode, data);
@@ -120,6 +121,7 @@ public class StartActivity extends Activity
 
 	private class StartThreadRunner implements Runnable
 	{
+		@Override
 		public void run()
 		{
 			try 
@@ -139,6 +141,7 @@ public class StartActivity extends Activity
 	}
 	private class ButtonListenerRegisterer implements Runnable
 	{
+		@Override
 		public void run() 
 		{
 			Button ccButton = (Button) findViewById(R.id.button_chooseContact);
@@ -149,6 +152,7 @@ public class StartActivity extends Activity
 	}
 	private class ChooseContactButtonListener implements View.OnClickListener
 	{		
+		@Override
 		public void onClick(View v) 
 		{
 			onChooseContactButtonClicked();			
@@ -156,6 +160,7 @@ public class StartActivity extends Activity
 	}
 	private class StartButtonListener implements View.OnClickListener
 	{		
+		@Override
 		public void onClick(View v) 
 		{
 			onStartButtonClicked();		

@@ -15,7 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.TextView;
 
 public class MainActivity extends Activity implements Runnable
 {
@@ -65,6 +64,7 @@ public class MainActivity extends Activity implements Runnable
 		}
 		return s;
 	}
+	@Override
 	public void onBackPressed()
 	{
 		System.exit(-1);
@@ -154,8 +154,7 @@ public class MainActivity extends Activity implements Runnable
 			public void run()
 			{
 				findViewById(R.id.button_sendMessage).setOnClickListener(buttonListener);
-				TextView tView = ((TextView) (findViewById(R.id.textView_messageArea)));
-				tView.setText(tView.getText() + " " + contactName + ":");
+				textViewOutputter.outputText("hai");
 			}
 
 		});
@@ -194,6 +193,7 @@ public class MainActivity extends Activity implements Runnable
 
 		Runnable run = new Runnable()
 		{
+			@Override
 			public void run() 
 			{
 
